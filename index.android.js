@@ -6,7 +6,7 @@
  import {
    AppRegistry,
    StyleSheet,
-   Text,
+   Text,  
    ListView,
    View,
    DeviceEventEmitter,
