@@ -4,8 +4,9 @@ import android.app.Application;
 import android.util.Log;
 
 import com.facebook.react.ReactApplication;
-import com.burnweb.rnpermissions.RNPermissionsPackage;
+import com.devstepbcn.wifi.AndroidWifiPackage;
 import com.mackentoch.beaconsandroid.BeaconsAndroidPackage;
+import com.burnweb.rnpermissions.RNPermissionsPackage;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
@@ -27,8 +28,9 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
-            new RNPermissionsPackage(),
-            new BeaconsAndroidPackage()
+            new AndroidWifiPackage(),
+            new BeaconsAndroidPackage(),
+            new RNPermissionsPackage()
       );
     }
   };
