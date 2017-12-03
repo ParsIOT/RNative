@@ -1,27 +1,13 @@
 'use strict';
-
- import React, {
-   Component
- }                     from 'react';
- import {
-   AppRegistry,
-   StyleSheet,
-   Text,  
-   ListView,
-   View,
-   DeviceEventEmitter,
-   Alert,
-   PermissionsAndroid
-   
- }                     from 'react-native';
-
-//  import {wifi} from 'react-native-android-wifi'
+ import React, {Component}  from 'react';
+ import {AppRegistry,StyleSheet,Text,ListView,View,DeviceEventEmitter,Alert,PermissionsAndroid} from 'react-native';
+ var wifi=require('react-native-android-wifi')
 
 
-var wifi=require('react-native-android-wifi')
 
 export default class wifi_class extends Component {
-  static navigationOptions = { title: 'wifi around', };
+
+  // static navigationOptions = { title: 'wifi around', };
   constructor(props){
     super(props)
     var ds = new ListView.DataSource({
@@ -29,112 +15,66 @@ export default class wifi_class extends Component {
       
     this.state={
       mydata:ds.cloneWithRows([]),
+      mydata2:'',
       dataSource: ds.cloneWithRows([]),
-      
-
-
+      serverData:[0,0,0,0,0,0,0,0,0,0]
     }
 
     setInterval(()=>{
       this._getUpdate()
-    },700)
+    },1000)
 
-
+    var count=-1;
+    setInterval(()=>{
+      count++;
+      this.state.serverData[count]=this.state.mydata2
+      console.log('server data : ',this.state.serverData)
+      if (count===9){
+        this.state.serverData[count]=this.state.mydata2
+        count=-1 ;
+        console.log('sending to server ......')}
+    },3000)
   }
+    
 
-  // listItems=()=> {numbers.map((number) =>
-  //   return(<li>{number}</li>)}
 
   _getUpdate=()=>{
-
-  //   wifi.loadWifiList((wifiStringList) => {
-  //     // var wifiArray = JSON.parse(wifiStringList);
-  //     console.log('done');
-  //   }
-  //     ,(error)=>{console.log(error)}
-  
-  // )
-
-
-
-  // wifi.isEnabled((isEnabled) => {
-  //   if (isEnabled) {
-  //     console.log("wifi service enabled");
-  //   } else { console.log('the wifi is off')}
-  //     // wifi.setEnabled(true);}
-  // });
-
-
-  // wifi.loadWifiList((wifiStringList) => {
-  //   var wifiArray = JSON.parse(wifiStringList);
-  //     console.log(wifiArray);
-  //   },
-  //   (error) => {
-  //     console.log(error);
-  //   }
-  // );
-
-  // wifi.setEnabled(true);
-  
   wifi.reScanAndLoadWifiList((wifiStringList) => {
     var wifiArray = JSON.parse(wifiStringList);
     this.setState({
-      // mydata:wifiArray,
-      mydata: this.state.dataSource.cloneWithRows(wifiArray)
-      
+      mydata: this.state.dataSource.cloneWithRows(wifiArray),
+      mydata2: wifiArray
     });
-    console.log('Detected wifi networks - ',wifiArray);
+    // console.log('Detected wifi networks - ',wifiArray);
   },
   (error) => {
     console.log(error)});
 
   }
 
-
   componentDidMount(){
     
-
-    
-
-    // this.wifiDidChange = DeviceEventEmitter.addListener(
-    //   'wifisDidRange',
-    //   (data) => {
-    //     this.setState({
-    //       dataSource: this.state.dataSource.cloneWithRows(data.beacons)
-    //     });
-    //   }
-    // );
-
     PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
     PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
     // PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.BODY_SENSORS, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
-    
-        
-  }
-
-  componentWillUnMount(){
-    // this.wifiDidRange = null;
   }
 
    render(){
     
+    // const { navigate } = this.props.navigation;
 
      return (
-    <View style={styles.container}>
-      {<Text style={styles.headline}>*** All Wifi routers Around ***</Text>}
+      <View style={styles.container}>
+        <Text style={styles.headline}>*** All Wifi routers Around ***</Text>
+      <ListView
+            dataSource={ this.state.mydata }
+            enableEmptySections={ true }
+            renderRow={this.renderRow}
+          /> 
+        </View>
 
-
-      {<ListView
-           dataSource={ this.state.mydata }
-           enableEmptySections={ true }
-           renderRow={this.renderRow}
-         /> }
-
-          
-      </View>
-
-     )
-   }
+      )
+    }
 
    renderRow=rowdata=>{
     return(

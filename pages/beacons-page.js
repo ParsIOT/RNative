@@ -3,6 +3,10 @@
  import React, {
    Component
  }                     from 'react';
+ 
+ import { StackNavigator } from 'react-navigation';
+ 
+ 
  import {
    AppRegistry,
    StyleSheet,
@@ -20,8 +24,9 @@
  import StackNavigation from 'react-navigation'
 
 export default class Beacon_class extends Component {
-  static navigationOptions = { title: 'beacons around', };
-   constructor(props) {
+
+  static navigationOptions = {title:'hi'};   
+  constructor(props) {
      super(props);
      // Create our dataSource which will be displayed in the ListView
      var ds = new ListView.DataSource({
@@ -68,20 +73,8 @@ export default class Beacon_class extends Component {
   }
 
 
-
-   
-
-
-
-
-   
-
-
    componentWillMount() {
-     //
-     // ONLY non component state aware here in componentWillMount
-     //
-     
+    
      Beacons.detectIBeacons();
 
      const uuid = this.state.uuidRef;
@@ -100,7 +93,6 @@ export default class Beacon_class extends Component {
        );
 
 
-       //Beacons.startUpdatingLocation();
    }
 
 
@@ -108,57 +100,34 @@ export default class Beacon_class extends Component {
    
 
    componentDidMount() {
+    //PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).catch(err=>Alert.alert(err))
+    PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
+    PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
 
+    this.beaconsDidRange = DeviceEventEmitter.addListener(
+      'beaconsDidRange',
+      (data) => {
+      // var wifiArray = JSON.parse(data);
+      console.log(data)        
+        this.setState({
+          dataSource: this.state.dataSource.cloneWithRows(data.beacons)
 
-    
-     //
-     // component state aware here - attach events
-     //
-     // Ranging:
-      //Alert.alert("hello")
-      
-
-      
-      // Permissions.check('camera').then(response => {
-      //   // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
-      //   this.setState({ photoPermission: response }); Alert.alert(response);
-      // });
-      
-      //PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).catch(err=>Alert.alert(err))
-      PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
-      PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
-      
-
-
-    
-     this.beaconsDidRange = DeviceEventEmitter.addListener(
-       'beaconsDidRange',
-       (data) => {
-        // var wifiArray = JSON.parse(data);
-        console.log(data)        
-         this.setState({
-           dataSource: this.state.dataSource.cloneWithRows(data.beacons)
-
-         });
-       }
-     );
-   }
+        });
+      }
+    );
+  }
 
    componentWillUnMount(){
      this.beaconsDidRange = null;
    }
 
    render() {
+    //  const { navigate } = this.props.navigation;    
      const { dataSource } =  this.state;
      return (
-  // <Container>
-  //   <Header/>
-  //     <Content>
-  //       <Card>
-  //         <CardItem>
-  //       <Body>   \
           <View style={styles.container}>     
-          <Text onPress={()=>navigate('Profile')}>{this.state.num}</Text> 
+          {/* <Text onPress={()=>navigate('Profile')}>{this.state.num}</Text>  */}
+
             <Text style={styles.headline}>
            ****   All iBeacons in around   ****
          </Text>
@@ -168,11 +137,7 @@ export default class Beacon_class extends Component {
            renderRow={this.renderRow}
          />
          </View>
-      //    </Body>
-      //    </CardItem>
-      //    </Card>
-      //    </Content>
-      //  </Container>
+     
      );
    }
 
@@ -248,4 +213,15 @@ export default class Beacon_class extends Component {
    }
  });
 
-AppRegistry.registerComponent('reactNativeBeaconExample', ()=> Beacon_class);
+
+
+
+
+ export const reactNativeBeaconExample = StackNavigator({
+  Home: { screen: Beacon_class },
+});
+
+AppRegistry.registerComponent('reactNativeBeaconExample', () => reactNativeBeaconExample);
+
+
+// AppRegistry.registerComponent('reactNativeBeaconExample', ()=> Beacon_class);
