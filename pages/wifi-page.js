@@ -23,7 +23,10 @@ export default class wifi_class extends Component {
       serverData:[0,0,0,0,0,0,0,0,0,0],
       progress:0,
       eyebrow:20,
-      pressed:false
+      pressed:false,
+      x_input:0,
+      y_input:0,
+      editable:true, // for editing text input
     }
 
     setInterval(()=>{
@@ -36,33 +39,33 @@ export default class wifi_class extends Component {
 
   _learn=()=>{
     this.setState({pressed:true})
+    this.setState({editable:false})
     var count=-1;
     var rep = setInterval(()=>{
       count++;
+      this._sendToServer();
       // Sending to server
       this.setState(previousState=>{return{progress:previousState.progress+0.1}}) 
       if (count===9){
       // Sending to server 
-      this.setState(previousState=>{return{progress:previousState.progress+0.1}}) 
+      this.setState(previousState=>{return{progress:previousState.progress+0.1}})
+      this.setState({progress:0})       
       this.setState({pressed:false})
-      
-      // Alert.alert('Learning finished')
-      this.setState({progress:0})
       ToastAndroid.show('Learning Done  !', ToastAndroid.SHORT);
+      this.setState({editable:true})
       clearInterval(rep)}
-    },500)
+    },3000)
   }
 
 
   _buttonPressed(){
 
     if (this.state.pressed){
-      return <Progress.Bar width={Dimensions.get('window').width-4} progress={this.state.progress}/>
+      return <Progress.Bar width={Dimensions.get('window').width-5} progress={this.state.progress}/>
       }
-    else{
-
+    else
+    {
       return <Button onPress={this._learn}  title="Press Me"/>
-      
     }
   }
 
@@ -80,6 +83,23 @@ export default class wifi_class extends Component {
 
   }
 
+  _sendToServer=()=>{
+    var wifis_list=[]
+    this.state.mydata2.map((data)=>{wifis_list.push({"mac":data.BSSID,"rssi":data.level})})
+
+    var mydict={
+    "group":"kjj_wifi_group",
+    "username":"kjj",
+    "location":[this.state.x_input,this.state.y_input],
+    "time":12309123,
+    "wifi-fingerprint":wifis_list}
+    var myjson=JSON.stringify(mydict)    
+    console.log(myjson)
+    // send myjson to server
+
+
+  }
+
   componentDidMount(){
     
     PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
@@ -93,6 +113,8 @@ export default class wifi_class extends Component {
 
      return (
       <View style={styles.container}>
+
+
       {/* <Text style={styles.headline}>*** All Wifi routers Around ***</Text> */}
       {/* <ListView
             dataSource={ this.state.mydata }
@@ -100,21 +122,18 @@ export default class wifi_class extends Component {
             renderRow={this.renderRow}
           />  */}
 
-      <View style={{flexDirection:'row',justifyContent: 'space-around',alignItems: 'center',paddingBottom:20}}>
 
+          
+      {/* <View style={{flexDirection:'row',justifyContent: 'space-around',alignItems: 'center',paddingBottom:20}}>
         <View style={{width:100,height:40,backgroundColor:'white'}}></View>
         <View style={{width:100,height:40,backgroundColor:'white'}}></View>
+      </View> */}
 
-      </View>
       <View style={{flexDirection:'row',justifyContent: 'space-around',alignItems: 'center',paddingBottom:20}}>
-        <TextInput style={{width:120,height:120,color:'black',backgroundColor:'white',textAlign:'center',borderRadius:100,fontSize:22}} placeholder="x"/>
-        <TextInput style={{width:120,height:120,color:'black',backgroundColor:'white',textAlign:'center',borderRadius:100,fontSize:22}} placeholder="y"/>
+        <TextInput editable={this.state.editable} onChangeText={(x)=>this.state.x_input=x} style={{width:120,height:120,color:'black',backgroundColor:'white',textAlign:'center',borderRadius:100,fontSize:22}} placeholder="x"/>
+        <TextInput editable={this.state.editable} onChangeText={(y)=>this.state.y_input=y} style={{width:120,height:120,color:'black',backgroundColor:'white',textAlign:'center',borderRadius:100,fontSize:22,borderBottomColor:'red'}} placeholder="y"/>
       </View>
 
-      {/* <Progress.Bar width={Dimensions.get('window').width-4} progress={this.state.progress}/> */}
-
-      {/* {<ProgressBar progress={this.state.progress}/>} */}
-      {/* <Button onPress={this._learn}  title="Press Me"/> */}
       {this._buttonPressed()}
         </View>
 
