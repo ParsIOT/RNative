@@ -32,6 +32,8 @@
   "react-native-beacons-manager": "^1.0.1",
   "react-native-bluetooth-state": "^2.0.0",
   "react-native-permissions": "^1.0.1",
+  "react-native-progress": "^3.4.0",
+  "react-native-progress-bar": "^0.1.2",
   "react-navigation": "^1.0.0-beta.21"
  },
  "devDependencies": {

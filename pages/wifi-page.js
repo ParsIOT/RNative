@@ -1,7 +1,10 @@
 'use strict';
  import React, {Component}  from 'react';
- import {AppRegistry,StyleSheet,Text,ListView,View,DeviceEventEmitter,Alert,PermissionsAndroid} from 'react-native';
+ import {ToastAndroid,TextInput,Button,Dimensions,AppRegistry,StyleSheet,Text,ListView,View,DeviceEventEmitter,Alert,PermissionsAndroid} from 'react-native';
  var wifi=require('react-native-android-wifi')
+ import * as Progress from 'react-native-progress';
+// var ProgressBar = require('react-native-progress-bar');
+// import * as ProgressBar from 'react-native-progress-bar'
 
 
 
@@ -17,26 +20,51 @@ export default class wifi_class extends Component {
       mydata:ds.cloneWithRows([]),
       mydata2:'',
       dataSource: ds.cloneWithRows([]),
-      serverData:[0,0,0,0,0,0,0,0,0,0]
+      serverData:[0,0,0,0,0,0,0,0,0,0],
+      progress:0,
+      eyebrow:20,
+      pressed:false
     }
 
     setInterval(()=>{
       this._getUpdate()
     },1000)
 
-    var count=-1;
-    setInterval(()=>{
-      count++;
-      this.state.serverData[count]=this.state.mydata2
-      console.log('server data : ',this.state.serverData)
-      if (count===9){
-        this.state.serverData[count]=this.state.mydata2
-        count=-1 ;
-        console.log('sending to server ......')}
-    },3000)
+    
   }
     
 
+  _learn=()=>{
+    this.setState({pressed:true})
+    var count=-1;
+    var rep = setInterval(()=>{
+      count++;
+      // Sending to server
+      this.setState(previousState=>{return{progress:previousState.progress+0.1}}) 
+      if (count===9){
+      // Sending to server 
+      this.setState(previousState=>{return{progress:previousState.progress+0.1}}) 
+      this.setState({pressed:false})
+      
+      // Alert.alert('Learning finished')
+      this.setState({progress:0})
+      ToastAndroid.show('Learning Done  !', ToastAndroid.SHORT);
+      clearInterval(rep)}
+    },500)
+  }
+
+
+  _buttonPressed(){
+
+    if (this.state.pressed){
+      return <Progress.Bar width={Dimensions.get('window').width-4} progress={this.state.progress}/>
+      }
+    else{
+
+      return <Button onPress={this._learn}  title="Press Me"/>
+      
+    }
+  }
 
   _getUpdate=()=>{
   wifi.reScanAndLoadWifiList((wifiStringList) => {
@@ -65,12 +93,29 @@ export default class wifi_class extends Component {
 
      return (
       <View style={styles.container}>
-        <Text style={styles.headline}>*** All Wifi routers Around ***</Text>
-      <ListView
+      {/* <Text style={styles.headline}>*** All Wifi routers Around ***</Text> */}
+      {/* <ListView
             dataSource={ this.state.mydata }
             enableEmptySections={ true }
             renderRow={this.renderRow}
-          /> 
+          />  */}
+
+      <View style={{flexDirection:'row',justifyContent: 'space-around',alignItems: 'center',paddingBottom:20}}>
+
+        <View style={{width:100,height:40,backgroundColor:'white'}}></View>
+        <View style={{width:100,height:40,backgroundColor:'white'}}></View>
+
+      </View>
+      <View style={{flexDirection:'row',justifyContent: 'space-around',alignItems: 'center',paddingBottom:20}}>
+        <TextInput style={{width:120,height:120,color:'black',backgroundColor:'white',textAlign:'center',borderRadius:100,fontSize:22}} placeholder="x"/>
+        <TextInput style={{width:120,height:120,color:'black',backgroundColor:'white',textAlign:'center',borderRadius:100,fontSize:22}} placeholder="y"/>
+      </View>
+
+      {/* <Progress.Bar width={Dimensions.get('window').width-4} progress={this.state.progress}/> */}
+
+      {/* {<ProgressBar progress={this.state.progress}/>} */}
+      {/* <Button onPress={this._learn}  title="Press Me"/> */}
+      {this._buttonPressed()}
         </View>
 
       )
