@@ -3,26 +3,24 @@
  import {ToastAndroid,TextInput,Button,Dimensions,AppRegistry,StyleSheet,Text,ListView,View,DeviceEventEmitter,Alert,PermissionsAndroid} from 'react-native';
  var wifi=require('react-native-android-wifi')
  import * as Progress from 'react-native-progress';
+ import { StackNavigator } from 'react-navigation';
 // var ProgressBar = require('react-native-progress-bar');
 // import * as ProgressBar from 'react-native-progress-bar'
 
 
 
-export default class wifi_class extends Component {
+export default class learn_class extends Component {
 
-  // static navigationOptions = { title: 'wifi around', };
   constructor(props){
     super(props)
     var ds = new ListView.DataSource({
       rowHasChanged: (r1, r2) => r1 !== r2 })
-      
     this.state={
       mydata:ds.cloneWithRows([]),
-      mydata2:'',
+      mydata2:[],
       dataSource: ds.cloneWithRows([]),
       serverData:[0,0,0,0,0,0,0,0,0,0],
       progress:0,
-      eyebrow:20,
       pressed:false,
       x_input:0,
       y_input:0,
@@ -31,11 +29,33 @@ export default class wifi_class extends Component {
 
     setInterval(()=>{
       this._getUpdate()
-    },1000)
+    },250)
 
     
   }
     
+  _sendToServer=(position)=>{                                                                   // the function to send tracking
+    // this._getUpdate();
+     var wifis_list=[];                                                                          // the wifi list (mac and rssi)
+     this.state.mydata2.map((data)=>{wifis_list.push({"mac":data.BSSID,"rssi":data.level})});    //we push our distinct mac and rssi of every wifi to a list to input it to json
+                                                                                                // prepairing the json :
+     var mydict={
+     "group":"kjj_wifi_group",
+     "username":"kjj",
+     "location":position,
+     "time":12309123,
+     "wifi-fingerprint":wifis_list}
+     var myjson=JSON.stringify(mydict)    
+    //  console.log(myjson)
+                                                                                              // send myjson to server
+     fetch("http://104.237.255.199:18003/learn",{
+      method:"POST",
+      body: myjson
+    }).then((response)=>console.log(response))
+   }
+  
+  
+  
 
   _learn=()=>{
     this.setState({pressed:true})
@@ -43,11 +63,12 @@ export default class wifi_class extends Component {
     var count=-1;
     var rep = setInterval(()=>{
       count++;
-      this._sendToServer();
+      this._sendToServer( this.state.x_input + "," + this.state.y_input );
       // Sending to server
       this.setState(previousState=>{return{progress:previousState.progress+0.1}}) 
       if (count===9){
       // Sending to server 
+      this._sendToServer( this.state.x_input + "," + this.state.y_input );      
       this.setState(previousState=>{return{progress:previousState.progress+0.1}})
       this.setState({progress:0})       
       this.setState({pressed:false})
@@ -83,22 +104,7 @@ export default class wifi_class extends Component {
 
   }
 
-  _sendToServer=()=>{
-    var wifis_list=[]
-    this.state.mydata2.map((data)=>{wifis_list.push({"mac":data.BSSID,"rssi":data.level})})
-
-    var mydict={
-    "group":"kjj_wifi_group",
-    "username":"kjj",
-    "location":[this.state.x_input,this.state.y_input],
-    "time":12309123,
-    "wifi-fingerprint":wifis_list}
-    var myjson=JSON.stringify(mydict)    
-    console.log(myjson)
-    // send myjson to server
-
-
-  }
+  
 
   componentDidMount(){
     
@@ -156,8 +162,6 @@ export default class wifi_class extends Component {
 
  }
 
-
-
  const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -197,4 +201,8 @@ export default class wifi_class extends Component {
   }
 });
 
- AppRegistry.registerComponent('reactNativeBeaconExample', ()=> wifi_class);
+// export const reactNativeBeaconExample = StackNavigator({
+//   Home: { screen: wifi_class },
+// });
+
+ AppRegistry.registerComponent('reactNativeBeaconExample', ()=> learn_class);
