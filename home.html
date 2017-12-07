@@ -6,13 +6,12 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js"></script>
+<link href="http://104.237.255.199:18003/static/css/leaflet.usermarker.css" rel="stylesheet">
+<script src='http://104.237.255.199:18003/static/js/leaflet.usermarker.js'></script>
 </head>
 <body>
-    <h1>hi</h1>
 
-
-    <div id="live-map" style="height: 600px;"></div>
-
+    <div id="live-map" style="height: 500px;"></div>
     <script type="application/javascript">
 
         var map = L.map('live-map', {
@@ -25,34 +24,36 @@
         var image = L.imageOverlay('http://104.237.255.199:18003/static/img/Map.png', bounds).addTo(map);
         map.setView([0, 0], -2);
     
+        var markers = {};
+        var pattern = /([\d.-]*)[\s]*,[\s]*([\d.-]*)/;
 
 
-        $.getJSON("/locations?group={{ .Group }}", function (data) {
-            var items = [];
-    
-            $.each(data.locations, function (key, val) {
-                let match = pattern.exec(key);
-                if (match) {
-                    items.push("<tr><td>" + match[1] + "</td><td>" + match[2] + "</td><td>" + val.accuracy + "</td><td>" + val.count + "</td></tr>");
-    
-                    markers[key] = L.userMarker([match[1], match[2]], {
-    //                    pulsing: true,
-    //                    accuracy: 200,
-                        title: key,
+        L.userMarker([0,0], {
+    //                  pulsing: true,
+    //                  accuracy: 200,
+                        title: 'key',
                         smallIcon: true
-                    }).bindPopup("<b>x = " + match[1] + "</b><br><b>y = " + match[2] + "</b>").addTo(map);
-                } else {
-                    items.push("<tr><td colspan='2' class='text-center'>" + key + "</td><td>" + val.accuracy + "</td><td>" + val.count + "</td></tr>");
-    
-                }
-            });
-    
-            
-             
-        });
-    
-    
+                    }).addTo(map)
 
+    //     $.getJSON("/locations?group={{ .Group }}", function (data) {
+    //         var items = [];
+    
+    //         $.each(data.locations, function (key, val) {
+    //             let match = pattern.exec(key);
+    //             if (match) {
+    //                 items.push("<tr><td>" + match[1] + "</td><td>" + match[2] + "</td><td>" + val.accuracy + "</td><td>" + val.count + "</td></tr>");
+    
+    //                 markers[key] = L.userMarker([match[1], match[2]], {
+    // //                  pulsing: true,
+    // //                  accuracy: 200,
+    //                     title: key,
+    //                     smallIcon: true
+    //                 }).bindPopup("<b>x = " + match[1] + "</b><br><b>y = " + match[2] + "</b>").addTo(map);
+    //             } else {
+    //                 items.push("<tr><td colspan='2' class='text-center'>" + key + "</td><td>" + val.accuracy + "</td><td>" + val.count + "</td></tr>");
+    //             }
+    //         });  
+    //     });
     </script>    
 </body>
 </html>

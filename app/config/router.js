@@ -8,4 +8,7 @@ export const Tabs = TabNavigator({
     track:{screen:track},
     learn:{screen:learn},
     map:{screen:map}
-})
+}
+,
+{swipeEnabled:false}
+)
