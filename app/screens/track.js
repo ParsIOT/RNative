@@ -26,9 +26,9 @@ class track_class extends Component {
      result_y:0,
      editable:true,                // for editing text input
    }
-   setInterval(()=>{               // there is bug here i must convert my _sendToServer to a promise
-     this._getUpdate()
-   },500)
+  //  setInterval(()=>{               // there is bug here i must convert my _sendToServer to a promise
+  //    this._getUpdate()
+  //  },500)
  }
    
 
@@ -45,10 +45,22 @@ class track_class extends Component {
    console.log(error)});
  }
 
- _sendToServer=(position)=>{                                                                   // the function to send tracking
-  // this._getUpdate();
-   var wifis_list=[];                                                                          // the wifi list (mac and rssi)
-   this.state.mydata2.map((data)=>{wifis_list.push({"mac":data.BSSID,"rssi":data.level})});    //we push our distinct mac and rssi of every wifi to a list to input it to json
+
+
+
+
+
+
+
+
+
+
+
+ _sendToServer=(position)=>{  
+  // the function to send tracking
+    this._getUpdate();
+    var wifis_list=[];                                                                          // the wifi list (mac and rssi)
+    this.state.mydata2.map((data)=>{wifis_list.push({"mac":data.BSSID,"rssi":data.level})});    //we push our distinct mac and rssi of every wifi to a list to input it to json
                                                                                               // prepairing the json :
    var mydict={
    "group":"kjj_wifi_group",
@@ -56,9 +68,9 @@ class track_class extends Component {
    "location":position,
    "time":12309123,
    "wifi-fingerprint":wifis_list}
-   var myjson=JSON.stringify(mydict)    
+   var myjson=JSON.stringify(mydict)
   //  console.log(myjson)
-                                                                                            // send myjson to server
+                                                                             // send myjson to server
   fetch("http://104.237.255.199:18003/track",{
     method:"POST",
     body: myjson
@@ -72,7 +84,7 @@ class track_class extends Component {
     }).catch((err)=>console.log(err))
  }
 
- // #######################################____design items ___############################################
+ // ####################################### ____design Items ___ ############################################
 
  _buttonPressed(){
   

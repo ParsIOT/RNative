@@ -27,12 +27,16 @@ class learn_class extends Component {
       editable:true, // for editing text input
     }
 
-    setInterval(()=>{
-      this._getUpdate()
-    },250)
+    // setInterval(()=>{
+    //   this._getUpdate()
+    // },250)
 
     
   }
+
+
+  
+
     
   _sendToServer=(position)=>{                                                                   // the function to send tracking
     // this._getUpdate();
@@ -52,6 +56,7 @@ class learn_class extends Component {
       method:"POST",
       body: myjson
     }).then((response)=>console.log(response))
+
    }
   
   
@@ -115,8 +120,6 @@ class learn_class extends Component {
 
    render(){
     
-    // const { navigate } = this.props.navigation;
-
      return (
       <View style={styles.container}>
 
@@ -127,13 +130,6 @@ class learn_class extends Component {
             enableEmptySections={ true }
             renderRow={this.renderRow}
           />  */}
-
-
-          
-      {/* <View style={{flexDirection:'row',justifyContent: 'space-around',alignItems: 'center',paddingBottom:20}}>
-        <View style={{width:100,height:40,backgroundColor:'white'}}></View>
-        <View style={{width:100,height:40,backgroundColor:'white'}}></View>
-      </View> */}
 
       <View style={{flexDirection:'row',justifyContent: 'space-around',alignItems: 'center',paddingBottom:20}}>
         <TextInput editable={this.state.editable} onChangeText={(x)=>this.state.x_input=x} style={{width:120,height:120,color:'black',backgroundColor:'white',textAlign:'center',borderRadius:100,fontSize:22}} placeholder="x"/>
@@ -200,10 +196,6 @@ class learn_class extends Component {
     color:'white'
   }
 });
-
-// export const reactNativeBeaconExample = StackNavigator({
-//   Home: { screen: wifi_class },
-// });
 
 export default learn_class;
 //  AppRegistry.registerComponent('reactNativeBeaconExample', ()=> learn_class);
