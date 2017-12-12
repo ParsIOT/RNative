@@ -8,12 +8,39 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js"></script>
 <link href="http://104.237.255.199:18003/static/css/leaflet.usermarker.css" rel="stylesheet">
 <script src='http://104.237.255.199:18003/static/js/leaflet.usermarker.js'></script>
+<script type="text/javascript">
+    myX=0;
+    document.addEventListener("message", function(data) {
+    temp= (data.data).split(",")
+    myX=temp[0]
+    myY=temp[1]
+
+    
+    document.getElementById("myText").innerHTML = temp;
+      
+    esm(myX,myY)
+    });
+
+    function esm(myX,myY) {
+        L.userMarker([myX,myY], {
+     //                  pulsing: true,
+     //                  accuracy: 200,
+                         title: 'key',
+                         smallIcon: true
+                     }).addTo(map).bindPopup("You're here !")
+
+    }
+  </script>
 </head>
 <body>
 
+        <h4>your position :  <span id="myText"></span></h4>
+
+    <script> 
+        </script>
     <div id="live-map" style="height: 500px;"></div>
     <script type="application/javascript">
-
+        
         var map = L.map('live-map', {
             crs: L.CRS.Simple,
             minZoom: -100,
@@ -27,13 +54,14 @@
         var markers = {};
         var pattern = /([\d.-]*)[\s]*,[\s]*([\d.-]*)/;
 
+    //     L.userMarker([0,0], {
+    // //                  pulsing: true,
+    // //                  accuracy: 200,
+    //                     title: 'key',
+    //                     smallIcon: true
+    //                 }).addTo(map).bindPopup("You're here !")
 
-        L.userMarker([0,0], {
-    //                  pulsing: true,
-    //                  accuracy: 200,
-                        title: 'key',
-                        smallIcon: true
-                    }).addTo(map)
+       
 
     //     $.getJSON("/locations?group={{ .Group }}", function (data) {
     //         var items = [];
@@ -54,6 +82,9 @@
     //             }
     //         });  
     //     });
-    </script>    
+    </script>
+    
+    
+    
 </body>
 </html>

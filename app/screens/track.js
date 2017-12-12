@@ -2,7 +2,7 @@
 import React, {Component}  from 'react';
 import {ToastAndroid,TextInput,Button,Dimensions,
         AppRegistry,StyleSheet,Text,ListView,
-        View,DeviceEventEmitter,Alert,PermissionsAndroid} from 'react-native';
+        View,DeviceEventEmitter,Alert,PermissionsAndroid, WebView} from 'react-native';
 var wifi=require('react-native-android-wifi')
 import * as Progress from 'react-native-progress';
 
@@ -26,9 +26,14 @@ class track_class extends Component {
      result_y:0,
      editable:true,                // for editing text input
    }
-  //  setInterval(()=>{               // there is bug here i must convert my _sendToServer to a promise
-  //    this._getUpdate()
-  //  },500)
+
+   setInterval(()=>{               // there is bug here i must convert my _sendToServer to a promise
+     this._getUpdate()
+
+   },500)
+
+   setInterval(()=>{
+     this._sendToServer()},1000)
  }
    
 
@@ -58,7 +63,7 @@ class track_class extends Component {
 
  _sendToServer=(position)=>{  
   // the function to send tracking
-    this._getUpdate();
+    // this._getUpdate();
     var wifis_list=[];                                                                          // the wifi list (mac and rssi)
     this.state.mydata2.map((data)=>{wifis_list.push({"mac":data.BSSID,"rssi":data.level})});    //we push our distinct mac and rssi of every wifi to a list to input it to json
                                                                                               // prepairing the json :
@@ -82,6 +87,10 @@ class track_class extends Component {
       var temp1=r3.knn.split(",")                                                           // split x and y
       this.setState({result_x:temp1[0], result_y:temp1[1]})
     }).catch((err)=>console.log(err))
+
+    this.refs.webview.postMessage(""+this.state.result_x+","+this.state.result_y)     
+    
+
  }
 
  // ####################################### ____design Items ___ ############################################
@@ -107,11 +116,22 @@ class track_class extends Component {
   render(){
     return (
      <View style={styles.container}>
-     <View style={{flexDirection:'row',justifyContent: 'space-around',alignItems: 'center',paddingBottom:20}}>
+          {/* {this._buttonPressed()} */}
+
+
+        <WebView
+        source={require('../../home.html')}
+        ref="webview"
+        style={{marginTop: 0}}
+        javaScriptEnabledAndroid={true}
+        
+      />
+     {/* <View style={{flexDirection:'row',justifyContent: 'space-around',alignItems: 'center',paddingBottom:20}}>
        <Text style={{width:120,height:120,color:'black',backgroundColor:'white',textAlign:'center',borderRadius:0,fontSize:17,textAlignVertical:'center'}}>{this.state.result_x}</Text>
        <Text style={{width:120,height:120,color:'black',backgroundColor:'white',textAlign:'center',borderRadius:0,fontSize:17,borderBottomColor:'red',textAlignVertical:'center'}}>{this.state.result_y}</Text>
-     </View>
-     {this._buttonPressed()}
+     </View> */}
+
+
        </View>
 
      )
@@ -134,8 +154,7 @@ class track_class extends Component {
 const styles = StyleSheet.create({
  container: {
    flex: 1,
-
-   paddingTop: 60,
+   paddingTop: 0,
    justifyContent: 'center',
    alignItems: 'stretch',
    backgroundColor: '#1c2c58'
