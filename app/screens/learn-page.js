@@ -1,6 +1,6 @@
 'use strict';
  import React, {Component}  from 'react';
- import {ToastAndroid,TextInput,Button,Dimensions,AppRegistry,StyleSheet,Text,ListView,View,DeviceEventEmitter,Alert,PermissionsAndroid} from 'react-native';
+ import {WebView,ToastAndroid,TextInput,Button,Dimensions,AppRegistry,StyleSheet,Text,ListView,View,DeviceEventEmitter,Alert,PermissionsAndroid} from 'react-native';
  var wifi=require('react-native-android-wifi')
  import * as Progress from 'react-native-progress';
  import { StackNavigator } from 'react-navigation';
@@ -25,6 +25,7 @@ class learn_class extends Component {
       x_input:0,
       y_input:0,
       editable:true, // for editing text input
+      currentPosision:"0,0"
     }
 
     setInterval(()=>{
@@ -68,7 +69,10 @@ class learn_class extends Component {
     var count=-1;
     var rep = setInterval(()=>{
       count++;
-      this._sendToServer( this.state.x_input + "," + this.state.y_input );
+
+      // this._sendToServer( this.state.x_input + "," + this.state.y_input );
+      this._sendToServer(this.state.currentPosision)
+
       // Sending to server
       this.setState(previousState=>{return{progress:previousState.progress+0.1}}) 
       if (count===9){
@@ -94,6 +98,15 @@ class learn_class extends Component {
       return <Button onPress={this._learn}  title="Learn ! "/>
     }
   }
+
+
+
+  onMessage=(data)=>{
+    console.log(data.nativeEvent.data)
+    this.setState({ currentPosision : data.nativeEvent.data })
+ }
+
+
 
   _getUpdate=()=>{
   wifi.reScanAndLoadWifiList((wifiStringList) => {
@@ -122,6 +135,7 @@ class learn_class extends Component {
     
      return (
       <View style={styles.container}>
+      <Text style={{color:'white',paddingBottom:10,paddingTop:10,textAlign:'center'}}>{this.state.currentPosision}</Text>
 
 
       {/* <Text style={styles.headline}>*** All Wifi routers Around ***</Text> */}
@@ -131,9 +145,16 @@ class learn_class extends Component {
             renderRow={this.renderRow}
           />  */}
 
-      <View style={{flexDirection:'row',justifyContent: 'space-around',alignItems: 'center',paddingBottom:20}}>
-        <TextInput editable={this.state.editable} onChangeText={(x)=>this.state.x_input=x} style={{width:120,height:120,color:'black',backgroundColor:'white',textAlign:'center',borderRadius:100,fontSize:22}} placeholder="x"/>
-        <TextInput editable={this.state.editable} onChangeText={(y)=>this.state.y_input=y} style={{width:120,height:120,color:'black',backgroundColor:'white',textAlign:'center',borderRadius:100,fontSize:22,borderBottomColor:'red'}} placeholder="y"/>
+      <View style={styles.container}>
+
+      <WebView
+        source={require('../../home1.html')}
+        ref="webview"
+        style={{marginTop: 0}}
+        onMessage={this.onMessage}
+        javaScriptEnabledAndroid={true}
+        />
+     
       </View>
 
       {this._buttonPressed()}
@@ -162,7 +183,7 @@ class learn_class extends Component {
   container: {
     flex: 1,
 
-    paddingTop: 60,
+    paddingTop:0,
     justifyContent: 'center',
     alignItems: 'stretch',
     backgroundColor: '#1c2c58'

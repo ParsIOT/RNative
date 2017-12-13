@@ -1,11 +1,11 @@
 import { StackNavigator } from 'react-navigation';
 import {AppRegistry} from 'react-native'
 
-import beacon from './app/screens/beacons-page'
-AppRegistry.registerComponent('reactNativeBeaconExample', () => beacon);
+// import beacon from './app/screens/beacons-page'
+// AppRegistry.registerComponent('reactNativeBeaconExample', () => beacon);
 
-// import App from './app/index'
-// AppRegistry.registerComponent('reactNativeBeaconExample', () => App);
+import App from './app/index'
+AppRegistry.registerComponent('reactNativeBeaconExample', () => App);
 
 
 

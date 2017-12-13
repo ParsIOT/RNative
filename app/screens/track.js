@@ -96,6 +96,10 @@ class track_class extends Component {
 
  }
 
+ onMessage=(data)=>{
+    console.log(data.nativeEvent.data)
+ }
+
  // ####################################### ____design Items ___ ############################################
 
  renderRow=rowdata=>{
@@ -119,6 +123,7 @@ class track_class extends Component {
         source={require('../../home.html')}
         ref="webview"
         style={{marginTop: 0}}
+        onMessage={this.onMessage}
         javaScriptEnabledAndroid={true}
         />
      

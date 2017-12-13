@@ -15,31 +15,13 @@
     <script src="leaflet/js/leaflet-slider.js" type="text/javascript"></script>
     <link rel="stylesheet" href="leaflet/css/leaflet-slider.css">
     <script type="text/javascript">
-
-
-// initMarker()
-        
-
-    document.addEventListener("message", function(data) {
-        temp= (data.data).split(",")
-        var myX=temp[0]
-        var myY=temp[1]
-        document.getElementById("myText").innerHTML = temp;
-        update_map(myX,myY)
-
-    });
-
+    
     
 
 
-    function update_map(myX1,myY1) {
-		    marker.slideTo([myX1,myY1], {
-			duration: 1000,
-			keepAtCenter: false
-        });
-    }
     
-    function initMarker(){}
+    
+    
 
   </script>
 
@@ -48,7 +30,6 @@
 
 <body>
 
-    <h4>your position :  <span id="myText"></span></h4>
 
    
     <div id="live-map" style="height: 500px;"></div>
@@ -56,18 +37,32 @@
 
     <script type="application/javascript">
         
+
+        
+
         var map = L.map('live-map', {
             crs: L.CRS.Simple,
             minZoom: -100,
     //        maxZoom: 4
         });
 
-        
+        map.on('click', function (e) {
+		console.log(e.latlng.lat + "," + e.latlng.lng);
+		var retVar = e.latlng.lat + "," + e.latlng.lng;
+        window.postMessage(retVar);
 
+        marker.slideTo([ e.latlng.lat , e.latlng.lng], {
+			duration: 500,
+			keepAtCenter: false
+        });
 
-        var marker = L.userMarker([0,0], {pulsing: true, accuracy: 300, smallIcon: true});
+    })
+
+    var marker = L.userMarker([0,0], {pulsing: true, accuracy: 300, smallIcon: true});
         marker.addTo(map);
 
+
+        
         var bounds = [[-1700, -1800], [1700, 1800]];        //    var bounds = [[-400, -300], [400, 300]];
         var image = L.imageOverlay('./leaflet/Map-min.png', bounds).addTo(map);
         map.setView([0, 0], -2);
