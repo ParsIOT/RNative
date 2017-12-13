@@ -27,9 +27,9 @@ class learn_class extends Component {
       editable:true, // for editing text input
     }
 
-    // setInterval(()=>{
-    //   this._getUpdate()
-    // },250)
+    setInterval(()=>{
+      this._getUpdate()
+    },250)
 
     
   }
@@ -50,7 +50,7 @@ class learn_class extends Component {
      "time":12309123,
      "wifi-fingerprint":wifis_list}
      var myjson=JSON.stringify(mydict)    
-    //  console.log(myjson)
+     console.log(myjson)
                                                                                               // send myjson to server
      fetch("http://104.237.255.199:18003/learn",{
       method:"POST",

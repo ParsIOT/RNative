@@ -217,11 +217,11 @@ export default class Beacon_class extends Component {
 
 
 
- export const reactNativeBeaconExample = StackNavigator({
-  Home: { screen: Beacon_class },
-});
+//  export const reactNativeBeaconExample = StackNavigator({
+//   Home: { screen: Beacon_class },
+// });
 
-AppRegistry.registerComponent('reactNativeBeaconExample', () => reactNativeBeaconExample);
+// AppRegistry.registerComponent('reactNativeBeaconExample', () => reactNativeBeaconExample);
 
 
 // AppRegistry.registerComponent('reactNativeBeaconExample', ()=> Beacon_class);

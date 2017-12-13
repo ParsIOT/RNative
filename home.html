@@ -8,37 +8,52 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js"></script>
 <link href="http://104.237.255.199:18003/static/css/leaflet.usermarker.css" rel="stylesheet">
 <script src='http://104.237.255.199:18003/static/js/leaflet.usermarker.js'></script>
-<script type="text/javascript">
-    myX=0;
-    document.addEventListener("message", function(data) {
-    temp= (data.data).split(",")
-    myX=temp[0]
-    myY=temp[1]
+<script src="leaflet/js/leaflet.js"></script>
+<script src="leaflet/leaflet.usermarker.js"></script>
+<script src='leaflet/Leaflet.Marker.SlideTo.js'></script>
 
-    
-    document.getElementById("myText").innerHTML = temp;
-      
-    esm(myX,myY)
+<script src="leaflet/js/leaflet-slider.js" type="text/javascript"></script>
+<link rel="stylesheet" href="leaflet/css/leaflet-slider.css">
+<script type="text/javascript">
+
+
+// initMarker()
+        
+
+    document.addEventListener("message", function(data) {
+        temp= (data.data).split(",")
+        var myX=temp[0]
+        var myY=temp[1]
+        document.getElementById("myText").innerHTML = temp;
+        update_map(myX,myY)
+
     });
 
-    function esm(myX,myY) {
-        L.userMarker([myX,myY], {
-     //                  pulsing: true,
-     //                  accuracy: 200,
-                         title: 'key',
-                         smallIcon: true
-                     }).addTo(map).bindPopup("You're here !")
+    
 
+
+    function update_map(myX1,myY1) {
+		    marker.slideTo([myX1,myY1], {
+			duration: 1000,
+			keepAtCenter: false
+        });
     }
+    
+    function initMarker(){}
+
   </script>
+
+
 </head>
+
 <body>
 
-        <h4>your position :  <span id="myText"></span></h4>
+    <h4>your position :  <span id="myText"></span></h4>
 
-    <script> 
-        </script>
+   
     <div id="live-map" style="height: 500px;"></div>
+</body>
+
     <script type="application/javascript">
         
         var map = L.map('live-map', {
@@ -46,12 +61,14 @@
             minZoom: -100,
     //        maxZoom: 4
         });
-        var bounds = [[-1200, -1800], [1200, 1800]];
-        //    var bounds = [[-400, -300], [400, 300]];
+
+        var marker = L.userMarker([0,0], {pulsing: true, accuracy: 300, smallIcon: true});
+        marker.addTo(map);
+
+        var bounds = [[-1700, -1800], [1700, 1800]];        //    var bounds = [[-400, -300], [400, 300]];
         var image = L.imageOverlay('http://104.237.255.199:18003/static/img/Map.png', bounds).addTo(map);
         map.setView([0, 0], -2);
     
-        var markers = {};
         var pattern = /([\d.-]*)[\s]*,[\s]*([\d.-]*)/;
 
     //     L.userMarker([0,0], {
@@ -86,5 +103,5 @@
     
     
     
-</body>
+
 </html>
