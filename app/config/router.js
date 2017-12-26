@@ -1,15 +1,19 @@
 import React from 'react'
 import {TabNavigator} from 'react-navigation'
-import track from '../screens/track'
-import learn from '../screens/learn-page'
-import beacon from '../screens/beacons-page'
+import track from '../screens/trackWifi'
+import learn from '../screens/learnWifi'
+// import beacon from '../screens/trackWifi'
+import TrackBeacons from '../screens/trackBeacon'
+import learnBeacon from '../screens/learnBeacon'
 
 export const Tabs = TabNavigator({
-    track:{screen:track},
-    learn:{screen:learn},
-    // beacon:{screen:beacon}
+    Wtrack:{screen:track},
+    Wlearn:{screen:learn},
+    Tbeacon:{screen:TrackBeacons},
+    Tlearn:{screen:learnBeacon}
 
 }
 ,
-{swipeEnabled:false}
+{swipeEnabled:false,
+}
 )

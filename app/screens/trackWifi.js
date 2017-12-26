@@ -1,75 +1,62 @@
 'use strict';
 import React, {Component}  from 'react';
-import { ToastAndroid,TextInput,Button,Dimensions,
-        AppRegistry,StyleSheet,Text,ListView,
-        View,DeviceEventEmitter,Alert,PermissionsAndroid, WebView } from 'react-native';
-
-var wifi=require('react-native-android-wifi')
-
-import * as Progress from 'react-native-progress';
-
-
-
-
+import {StyleSheet, Text,
+        ListView, View,
+        Alert,PermissionsAndroid, WebView } from 'react-native';
+var wifi = require('react-native-android-wifi')
 
 
 
 class track_class extends Component {
 
-
   componentDidMount(){
-    
     PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
     PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
-    // PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.BODY_SENSORS, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
   }
 
 
  constructor(props){
     super(props)
-
     var ds = new ListView.DataSource({
       rowHasChanged: (r1, r2) => r1 !== r2 })
-
     this.state = {
       mydata:ds.cloneWithRows([]),
       mydata2:[],
       dataSource: ds.cloneWithRows([]),
       result_x:0,
-      result_y:0,
-   }
+      result_y:0,  
+    }
 
     setInterval(()=>{               // there is bug here i must convert my _sendToServer to a promise
       this._getUpdate() } ,500)
 
-     setInterval(()=>{                
+      setInterval(()=>{                
       this._sendToServer();} , 1000 );
- }
+    }
    
 
 
- _getUpdate = ()=> {                                              // a function to update the wifi list
-
+  _getUpdate = ()=> {                                              // a function to update the wifi list
     wifi.reScanAndLoadWifiList( (wifiStringList) => {            // scan wifis around
     var wifiArray = JSON.parse(wifiStringList);                  // generate "list" from json
     this.setState({
       mydata: this.state.dataSource.cloneWithRows(wifiArray),   // for showing in listView(not used)
       mydata2: wifiArray                                        // our wifi list state
             });  
-    //  console.log('Detected wifi networks - ',wifiArray);
-  },
-  (error) => {
-    console.log(error)});
+    },
+    (error) => {
+      console.log(error)});
     }
 
 
 
  _sendToServer=(position)=>{      // the function to send tracking
     
-    var wifis_list = [];                                                                          // the wifi list (mac and rssi)
-    this.state.mydata2.map((data)=>{wifis_list.push({"mac":data.BSSID,"rssi":data.level})});    //we push our (mac and rssi) of every wifi to a list to pass it to json
+    var wifis_list = [];
+    var temp1 = this.state.mydata2;                                                                          // the wifi list (mac and rssi)
+    temp1.map((data)=>{wifis_list.push({"mac":data.BSSID,"rssi":data.level})});    //we push our (mac and rssi) of every wifi to a list to pass it to json
                                                                                                 
-    var mydict = {                                                   // prepairing the json :
+    var mydict = {                                                                // prepairing the json :
     "group" : "kjj_wifi_group" ,
     "username":"kjj",
     "location":position,
@@ -96,9 +83,9 @@ class track_class extends Component {
 
  }
 
- onMessage=(data)=>{
+  onMessage=(data)=>{
     console.log(data.nativeEvent.data)
- }
+  }
 
  // ####################################### ____design Items ___ ############################################
 
@@ -120,7 +107,7 @@ class track_class extends Component {
       <View style={styles.container}>
 
         <WebView
-        source={require('../../home.html')}
+        source={require('../static/home.html')}
         ref="webview"
         style={{marginTop: 0}}
         onMessage={this.onMessage}

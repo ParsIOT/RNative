@@ -5,6 +5,10 @@ import {AppRegistry} from 'react-native'
 // AppRegistry.registerComponent('reactNativeBeaconExample', () => beacon);
 
 import App from './app/index'
+
+// import MessageQueue from 'react-native/Libraries/BatchedBridge/MessageQueue';
+// MessageQueue.spy(true);
+
 AppRegistry.registerComponent('reactNativeBeaconExample', () => App);
 
 

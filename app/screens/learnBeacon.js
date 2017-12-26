@@ -3,20 +3,20 @@
  import React, {Component} from 'react';
  import { StackNavigator } from 'react-navigation';
  import { AppRegistry, StyleSheet,Text,
-          ListView,View, DeviceEventEmitter,
-          Alert, PermissionsAndroid } from 'react-native';
+  ListView,View, DeviceEventEmitter,
+  Alert, PermissionsAndroid, WebView,
+  Button } from 'react-native';
  import Beacons from 'react-native-beacons-manager';
  import Permissions from 'react-native-permissions';
  import {checkPermission} from 'react-native-android-permissions'
  import StackNavigation from 'react-navigation'
-
-
-
+ import * as Progress from 'react-native-progress';
+ 
 
 
 export default class Beacon_class extends Component {
 
-  static navigationOptions = {title:'Beacons'};   
+  static navigationOptions = {title:'Lbeacons'};   
   constructor(props) {
      super(props);
      var ds = new ListView.DataSource({
@@ -25,12 +25,20 @@ export default class Beacon_class extends Component {
      this.state = {
        // region information
        uuidRef: '7b44b47b-52a1-5381-90c2-f09b6838c5d4',  //23A01AF0-232A-4518-9C0E-323FB773F5EF
-       photoPermission:'',
-       // React Native ListView datasource initialization
-       dataSource: ds.cloneWithRows([]),
-        num:0,
-
-       mac_list:[0,[0,
+      photoPermission:'0,0',
+      // React Native ListView datasource initialization
+      dataSource: ds.cloneWithRows([]),
+      nummydata: ds.cloneWithRows([]),
+      mydata2: [],
+      dataSource: ds.cloneWithRows([]),
+      serverData:[0,0,0,0,0,0,0,0,0,0],
+      progress: 0,
+      pressed: false,
+      x_input: 0,
+      y_input: 0,
+      editable: true, // for editing text input
+      currentPosision: "0,0",
+      mac_list:[0,[0,
         'FA:CF:CB:5D:0E:B8',
         'FA:C5:13:37:F5:09',
         'F0:AB:CE:31:10:B9',
@@ -45,9 +53,9 @@ export default class Beacon_class extends Component {
        myData2:[],
       };
 
-     setInterval(() => {
-      this._sendToServer()
-      }, 1000);
+    //  setInterval(() => {
+    //   this._sendToServer()
+    //   }, 1000);
     
     
       // var count = 0;
@@ -84,32 +92,70 @@ export default class Beacon_class extends Component {
 
    }
 
+   _buttonPressed(){
+    
+        if (this.state.pressed){
+          return<Text> Loading ... </Text>
+          }
+        else
+        {
+          return <Button style={{position:'absolute'}} onPress={this._learn}  title="Learn ! "/>
+        }
+      }
 
-   _sendToServer=()=>{
-      var beacons_list = [];                                                                          // the wifi list (mac and rssi)
-      this.state.myData2.map((data)=>{
+
+    _learn=()=>{
+      this.setState({pressed:true})
+      this.setState({editable:false})
+      var count=-1;
+      var rep = setInterval(()=>{
+        count++;
+  
+        // this._sendToServer( this.state.x_input + "," + this.state.y_input );
+        this._sendToServer(this.state.currentPosision)
+  
+        // Sending to server
+        this.setState(previousState=>{return{progress:previousState.progress+0.1}}) 
+        if (count===9){
+        // Sending to server 
+        this._sendToServer( this.state.x_input + "," + this.state.y_input );      
+        this.setState(previousState=>{return{progress:previousState.progress+0.1}})
+        this.setState({progress:0})       
+        this.setState({pressed:false})
+        // ToastAndroid.show('Learning Done  !', ToastAndroid.SHORT);
+        this.setState({editable:true})
+        clearInterval(rep)}
+      },3000)
+    }
+    
+
+
+   _sendToServer=(position)=>{
+     
+      var beacons_list = [];
+      var temp=this.state.myData2                                                                          // the wifi list (mac and rssi)
+      temp.map((data)=>{
         if (data.major<2){
           beacons_list.push({ "mac" : this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] , "rssi":data.rssi} )};    //we push our (mac and rssi) of every wifi to a list to pass it to json
         })
       var mydict = {                                                   // prepairing the json :
-        "group" : "kjj_wifi_group" ,
+        "group" : "kjj_beacon_group" ,
         "username":"kjj",
-        "location":"0,0",
+        "location": position ,
         "time":12309123,
         "wifi-fingerprint":beacons_list  }
 
       var myjson = JSON.stringify(mydict)
-      console.log(beacons_list)
+    //   console.log(beacons_list)
 
 
-      fetch("http://104.237.255.199:18003/track",{                           // send myjson to server
+      fetch("http://104.237.255.199:18003/learn",{                           // send myjson to server
         method:"POST",
         body: myjson })
-      .then((response)=>{
-    //  console.log(response) 
-   })
-
-   }
+        .then((response)=>{
+            console.log(response) 
+        })
+      }
    
 
     componentDidMount() {
@@ -132,24 +178,39 @@ export default class Beacon_class extends Component {
       this.beaconsDidRange = null;
    }
 
+   onMessage=(data)=>{
+    this.setState({currentPosision: data.nativeEvent.data })
+ }
+
     render() {
-    //  const { navigate } = this.props.navigation;    
       const { dataSource } =  this.state;
       return (
-          <View style={styles.container}>     
-          {/* <Text onPress={()=>navigate('Profile')}>{this.state.num}</Text>  */}
-
-            <Text style={styles.headline}>
-            ****   All iBeacons in around   ****
-          </Text>
-          <ListView
-            dataSource={ dataSource }
-            enableEmptySections={ true }
-            renderRow={this.renderRow}
+        <View style={styles.container}>
+        <Text style={{color:'white',paddingBottom:10,paddingTop:10,textAlign:'center'}}>{this.state.currentPosision}</Text>
+  
+  
+        {/* <Text style={styles.headline}>*** All Wifi routers Around ***</Text> */}
+        {/* <ListView
+              dataSource={ this.state.mydata }
+              enableEmptySections={ true }
+              renderRow={this.renderRow}
+            />  */}
+  
+  
+        <WebView
+          source={require('../static/LearnBeacon.html')}
+          ref="webview"
+          style={{marginTop: 0}}
+          onMessage={this.onMessage}
+          javaScriptEnabledAndroid={true}
           />
-          </View>
-      
-      );
+       
+
+          {this._buttonPressed()}
+        
+        </View>
+  
+        )
     }
 
    renderRow = rowData => { 
@@ -185,19 +246,15 @@ export default class Beacon_class extends Component {
   }
 }
 
-
-// #61D13e#ffd933#61D13e#ffd933#61D13e#ffd933#61D13e#ffd933#61D13e#ffd933#61D13e#ffd933#61D13e#ffd933#61D13e#ffd933#61D13e#ffd933
-
  const styles = StyleSheet.create({
-   container: {
-     flex: 1,
-
-     paddingTop: 60,
-     justifyContent: 'center',
-     alignItems: 'stretch',
-     backgroundColor: '#1c2c58'
-     //#1c2c58
-   },
+    container: {
+        flex: 1,
+        paddingTop: 0,
+        justifyContent: 'center',
+        alignItems: 'stretch',
+        backgroundColor: '#1c2c58'
+        //#1c2c58
+      },
    btleConnectionStatus: {
      // fontSize: 20,
      paddingTop: 20
@@ -230,6 +287,12 @@ export default class Beacon_class extends Component {
 
 
 
+
+//  export const reactNativeBeaconExample = StackNavigator({
+//   Home: { screen: Beacon_class },
+// });
+
+// AppRegistry.registerComponent('reactNativeBeaconExample', () => reactNativeBeaconExample);
 
 
 // AppRegistry.registerComponent('reactNativeBeaconExample', ()=> Beacon_class);

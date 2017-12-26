@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8/>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js"></script>
+    <link href="http://104.237.255.199:18003/static/css/leaflet.usermarker.css" rel="stylesheet">
+    <script src='./leaflet/leaflet.usermarker.js'></script>
+    <script src="./leaflet/js/leaflet.js"></script>
+    <script src="./leaflet/leaflet.usermarker.js"></script>
+    <script src='./leaflet/Leaflet.Marker.SlideTo.js'></script>
+
+    <script src="./leaflet/js/leaflet-slider.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="./leaflet/css/leaflet-slider.css">
+    <script type="text/javascript">
+
+// initMarker()
+        
+
+    document.addEventListener("message", function(data) {
+        temp= (data.data).split(",")
+        var myX=temp[0]
+        var myY=temp[1]
+        document.getElementById("myText").innerHTML = temp;
+        update_map(myX,myY)
+
+    });
+
+    
+
+
+    function update_map(myX1,myY1) {
+		    marker.slideTo([myX1,myY1], {
+			duration: 1000,
+			keepAtCenter: true
+        });
+    }
+    
+    function initMarker(){}
+
+  </script>
+
+
+</head>
+
+<body>
+
+    <h4>your position :  <span id="myText"></span></h4>
+
+   
+    <div id="live-map" style="height: 500px;"></div>
+</body>
+
+    <script type="application/javascript">
+        
+        var map = L.map('live-map', {
+            crs: L.CRS.Simple,
+            minZoom: -100,
+    //        maxZoom: 4
+        });
+
+        
+
+
+        var marker = L.userMarker([0,0], {pulsing: true, accuracy: 300, smallIcon: true});
+        marker.addTo(map);
+
+        var bounds = [[-1700, -1800], [1700, 1800]];        //    var bounds = [[-400, -300], [400, 300]];
+        var image = L.imageOverlay(' ./Map-min.png ', bounds).addTo(map);
+        map.setView([0, 0], -2);
+    
+        var pattern = /([\d.-]*)[\s]*,[\s]*([\d.-]*)/;
+
+    //     L.userMarker([0,0], {
+    // //                  pulsing: true,
+    // //                  accuracy: 200,
+    //                     title: 'key',
+    //                     smallIcon: true
+    //                 }).addTo(map).bindPopup("You're here !")
+
+       
+
+    //     $.getJSON("/locations?group={{ .Group }}", function (data) {
+    //         var items = [];
+    
+    //         $.each(data.locations, function (key, val) {
+    //             let match = pattern.exec(key);
+    //             if (match) {
+    //                 items.push("<tr><td>" + match[1] + "</td><td>" + match[2] + "</td><td>" + val.accuracy + "</td><td>" + val.count + "</td></tr>");
+    
+    //                 markers[key] = L.userMarker([match[1], match[2]], {
+    // //                  pulsing: true,
+    // //                  accuracy: 200,
+    //                     title: key,
+    //                     smallIcon: true
+    //                 }).bindPopup("<b>x = " + match[1] + "</b><br><b>y = " + match[2] + "</b>").addTo(map);
+    //             } else {
+    //                 items.push("<tr><td colspan='2' class='text-center'>" + key + "</td><td>" + val.accuracy + "</td><td>" + val.count + "</td></tr>");
+    //             }
+    //         });  
+    //     });
+    </script>
+    
+    
+    
+
+</html>
