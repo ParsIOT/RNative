@@ -24,16 +24,35 @@ class track_class extends Component {
       mydata2:[],
       dataSource: ds.cloneWithRows([]),
       result_x:0,
-      result_y:0,  
+      result_y:0,
+      average:{},
+      repeate:{}  
     }
 
     setInterval(()=>{               // there is bug here i must convert my _sendToServer to a promise
       this._getUpdate() } ,500)
 
-      setInterval(()=>{                
-      this._sendToServer();} , 1000 );
-    }
-   
+      // setInterval(()=>{                
+      // this._addToAverage();} , 1000 );
+    
+
+
+      var  count=0
+      var rep = setInterval(()=>{
+        count++;
+        this._addToAverage(count)
+        // Sending to server *
+        if (count === 3){
+          this._addToAverage(count)
+          // console.log(this.state.average)
+          // console.log(this.state.repeate)
+          this._sendToServer()
+          console.log('done')
+          count = 0
+          this.setState({average:{},repeate:{}})
+        }
+      },1000);
+  }
 
 
   _getUpdate = ()=> {                                              // a function to update the wifi list
@@ -42,26 +61,55 @@ class track_class extends Component {
     this.setState({
       mydata: this.state.dataSource.cloneWithRows(wifiArray),   // for showing in listView(not used)
       mydata2: wifiArray                                        // our wifi list state
-            });  
+            }); 
+            // console.log(wifiArray) 
     },
     (error) => {
       console.log(error)});
     }
 
 
-
+    _addToAverage=(count)=>{
+      
+      // this._getUpdate()
+      // console.log(this.state.mydata2)
+      
+      var temp = this.state.mydata2
+      // console.log(this.state.mydata2)
+      temp.map((data)=>{
+        
+          if (this.state.average[data.BSSID] ){
+              this.state.average[data.BSSID] += data.level
+              this.state.repeate[data.BSSID ] +=1
+            
+            // console.log(this.state.average)  
+          }
+          else {
+            // console.log(count)  
+            this.state.average[ data.BSSID] = 0
+            this.state.average[ data.BSSID ] += data.level
+            this.state.repeate[ data.BSSID ] = 1
+          }
+        
+      
+      })
+  
+  
+    }
  _sendToServer=(position)=>{      // the function to send tracking
     
     var wifis_list = [];
-    var temp1 = this.state.mydata2;                                                                          // the wifi list (mac and rssi)
-    temp1.map((data)=>{wifis_list.push({"mac":data.BSSID,"rssi":data.level})});    //we push our (mac and rssi) of every wifi to a list to pass it to json
-                                                                                                
-    var mydict = {                                                                // prepairing the json :
+    // console.log(this.state.average)
+    var temp1 = this.state.average ;                                                                          // the wifi list (mac and rssi)
+    for (var data in temp1){ wifis_list.push({"mac":data,"rssi": Math.round( temp1[data]/this.state.repeate[data] ) })};    //we push our (mac and rssi) of every wifi to a list to pass it to json
+      // console.log( wifis_list )                                                                                         
+    var mydict = {
+                                                                    // prepairing the json :
     "group" : "kjj_wifi_group" ,
     "username":"kjj",
     "location":position,
     "time":12309123,
-    "wifi-fingerprint":wifis_list}
+    "wifi-fingerprint":wifis_list }
 
     var myjson = JSON.stringify(mydict)
                                                                              
@@ -159,10 +207,6 @@ const styles = StyleSheet.create({
    color:'white'
  }
 });
-
-
-
-
 
 
 export default track_class;

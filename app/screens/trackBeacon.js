@@ -18,9 +18,8 @@ export default class Beacon_class extends Component {
     num:0,
     result_x:0,
     result_y:0,
-    average:{
-      
-    },
+    average:{},
+    repeate:{},
 //  mac_list:[0,[0,
 //   'FA:CF:CB:5D:0E:B8',
 //   'FA:C5:13:37:F5:09',
@@ -44,31 +43,36 @@ export default class Beacon_class extends Component {
     ]],
       };
 
-     setInterval(() => {
-      this._sendToServer()
-      }, 1500 );
+    //  setInterval(() => {
+    //   this._sendToServer()
+    //   }, 1500 );
     
 
 
 
-      // var count=-1;
+      var count=0;
       
-      // var rep = setInterval(()=>{
-      //   count++;
-      //   this._addToAverage()
-      //   // Sending to server
-      //   if (count === 5){
-      //     this._sendToServer()
-      //     this.setState({average:{}})
-      //   }
-      // },1000);
+      var rep = setInterval(()=>{
+        count++;
+        this._addToAverage(count)
+        // Sending to server *
+        if (count === 3){
+          this._addToAverage(count)
+          // console.log(this.state.average)
+          // console.log(this.state.repeate)
+          this._sendToServer()
+          console.log('done')
+          count=0
+          this.setState({average:{},repeate:{}})
+
+        }
+      },1000);
 }
 
 
    componentWillMount() {
     
      Beacons.detectIBeacons();
-     const uuid = this.state.uuidRef;
      Beacons.startMonitoringForRegion(null).catch((err)=>console.log("***startmonitoringError : "+err));
      Beacons.startRangingBeaconsInRegion(
          'REGION1',
@@ -85,16 +89,23 @@ export default class Beacon_class extends Component {
 
 
 
-  _addToAverage=()=>{
+  _addToAverage=(count)=>{
+    
     //getUpdate
     var temp = this.state.myData2
     temp.map((data)=>{
       if (data.major===1){
-        if ( this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] && this.state.myData2.length > 3){
-          this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] += data.rssi}
-        else{  
+        if ( this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] ){
+          this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] += data.rssi
+          this.state.repeate[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] +=1
+          // console.log(count)
+          // console.log(this.state.average)  
+        }
+        else {
+          // console.log(count)  
           this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] = 0
           this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] += data.rssi
+          this.state.repeate[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] = 1
         }
       }
     
@@ -108,28 +119,13 @@ export default class Beacon_class extends Component {
 
    _sendToServer=()=>{
       var beacons_list = [];
-      var temp = this.state.myData2 ;
-                                                                              // the wifi list (mac and rssi)
-      temp.map((data)=>{
-        if (data.major===1){
-          var theMac= this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)]
-          beacons_list.push({ "mac" : theMac , "rssi":data.rssi} )
-          if ( this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] && beacons_list.length>3){
-            this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] += data.rssi}
-          else{  
-            this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] = 0
-            this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] += data.rssi
-          
-          }
-          
-        
-                                                  };    //we push our (mac and rssi) of every wifi to a list to pass it to json
-          
-        
-        })
+      var temp = this.state.average ;                                                                        // the wifi list (mac and rssi)
+      for (var mac in temp){
+        beacons_list.push({"mac":mac,"rssi": Math.round( temp[mac] / this.state.repeate[mac] )})
+      }
 
-      console.log(this.state.average)
-        // console.log(temp)
+      // console.log("\n beacons_list =>>>> ",beacons_list)
+      // console.log("temp =>>>>",temp)
       var mydict = {                                                   // prepairing the json :
         "group" : "arman_20_7_96_ble_2" ,
         "username":"hadi",
@@ -137,14 +133,15 @@ export default class Beacon_class extends Component {
         "time":12309123,
         "wifi-fingerprint" : beacons_list  }
 
+
       var myjson = JSON.stringify(mydict)
-      // console.log(myjson)
+      console.log(myjson)
       // console.log(Date.now())
       fetch("http://104.237.255.199:18003/track",{                           // send myjson to server
         method:"POST",
         body: myjson })
         .then((response)=>{
-            // console.log(response) 
+            console.log(response) 
             return (JSON.stringify(eval("(" + response._bodyInit + ")")))})      // get the response and change("") around json to ('') to able to parse it
         .then((r2)=>JSON.parse(r2))
         .then((r3)=>{
@@ -154,7 +151,8 @@ export default class Beacon_class extends Component {
         .catch((err)=>{
                           console.log(err+"  Again is sending ...")
                          
-                          this._sendToServer()})
+                          // this._sendToServer()
+                        })
 
    }
    
