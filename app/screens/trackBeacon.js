@@ -18,6 +18,7 @@ export default class Beacon_class extends Component {
     num:0,
     result_x:0,
     result_y:0,
+    average:{},
 //  mac_list:[0,[0,
 //   'FA:CF:CB:5D:0E:B8',
 //   'FA:C5:13:37:F5:09',
@@ -43,7 +44,7 @@ export default class Beacon_class extends Component {
 
      setInterval(() => {
       this._sendToServer()
-      }, 1500);
+      }, 1500 );
     
   }
 
@@ -52,7 +53,7 @@ export default class Beacon_class extends Component {
     
      Beacons.detectIBeacons();
      const uuid = this.state.uuidRef;
-     Beacons.startMonitoringForRegion(null);
+     Beacons.startMonitoringForRegion(null).catch((err)=>console.log("***startmonitoringError : "+err));
      Beacons.startRangingBeaconsInRegion(
          'REGION1',
         null
@@ -64,18 +65,18 @@ export default class Beacon_class extends Component {
          error => console.log(`Beacons ranging not started, error: ${error}`)
        );
 
-
    }
 
 
    _sendToServer=()=>{
       var beacons_list = [];
-      var temp = this.state.myData2 ;                                                                         // the wifi list (mac and rssi)
+      var temp = this.state.myData2 ;
+                                                                              // the wifi list (mac and rssi)
       temp.map((data)=>{
-        if (data.major<2){
+        if (data.major===1){
           beacons_list.push({ "mac" : this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] , "rssi":data.rssi} )};    //we push our (mac and rssi) of every wifi to a list to pass it to json
         })
-        // console.log(beacons_list)
+        // console.log(temp)
       var mydict = {                                                   // prepairing the json :
         "group" : "arman_20_7_96_ble_2" ,
         "username":"hadi",
@@ -85,6 +86,7 @@ export default class Beacon_class extends Component {
 
       var myjson = JSON.stringify(mydict)
       // console.log(myjson)
+      console.log(Date.now())
       fetch("http://104.237.255.199:18003/track",{                           // send myjson to server
         method:"POST",
         body: myjson })
@@ -93,10 +95,13 @@ export default class Beacon_class extends Component {
             return (JSON.stringify(eval("(" + response._bodyInit + ")")))})      // get the response and change("") around json to ('') to able to parse it
         .then((r2)=>JSON.parse(r2))
         .then((r3)=>{
-        var temp1=r3.knn.split(",")                                          // split x and y
+        var temp1 = r3.knn.split( "," )                                          // split x and y
         this.setState({ result_x : temp1[0], result_y : temp1[1]})
         }).then(()=>this.refs.webview.postMessage( "" + this.state.result_x + "," + this.state.result_y ))
-        .catch((err)=>console.log('err'))
+        .catch((err)=>{
+                          console.log(err+"  Again is sending ...")
+                         
+                          this._sendToServer()})
 
    }
    
@@ -112,8 +117,9 @@ export default class Beacon_class extends Component {
             myData2: data.beacons,
             dataSource: this.state.dataSource.cloneWithRows(data.beacons)
           });  
+          // console.log(this.state.mydata2)
         }
-      );
+      )
     }
 
     componentWillUnMount(){

@@ -7,8 +7,8 @@ import TrackBeacons from '../screens/trackBeacon'
 import learnBeacon from '../screens/learnBeacon'
 
 export const Tabs = TabNavigator({
-    Wtrack:{screen:track},
-    Wlearn:{screen:learn},
+    //Wtrack:{screen:track},
+    //Wlearn:{screen:learn},
     Tbeacon:{screen:TrackBeacons},
     Tlearn:{screen:learnBeacon}
 
