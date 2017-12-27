@@ -2,7 +2,7 @@
 import React, {Component} from 'react';
 import {  StyleSheet,Text,
   ListView,View, DeviceEventEmitter,
-  Alert, PermissionsAndroid, WebView } from 'react-native';
+  Alert,  WebView } from 'react-native';  //PermissionsAndroid
 import Beacons from 'react-native-beacons-manager';
 
 
@@ -18,7 +18,9 @@ export default class Beacon_class extends Component {
     num:0,
     result_x:0,
     result_y:0,
-    average:{},
+    average:{
+      
+    },
 //  mac_list:[0,[0,
 //   'FA:CF:CB:5D:0E:B8',
 //   'FA:C5:13:37:F5:09',
@@ -46,7 +48,21 @@ export default class Beacon_class extends Component {
       this._sendToServer()
       }, 1500 );
     
-  }
+
+
+
+      // var count=-1;
+      
+      // var rep = setInterval(()=>{
+      //   count++;
+      //   this._addToAverage()
+      //   // Sending to server
+      //   if (count === 5){
+      //     this._sendToServer()
+      //     this.setState({average:{}})
+      //   }
+      // },1000);
+}
 
 
    componentWillMount() {
@@ -68,14 +84,51 @@ export default class Beacon_class extends Component {
    }
 
 
+
+  _addToAverage=()=>{
+    //getUpdate
+    var temp = this.state.myData2
+    temp.map((data)=>{
+      if (data.major===1){
+        if ( this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] && this.state.myData2.length > 3){
+          this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] += data.rssi}
+        else{  
+          this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] = 0
+          this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] += data.rssi
+        }
+      }
+    
+    })
+
+
+  }
+
+
+
+
    _sendToServer=()=>{
       var beacons_list = [];
       var temp = this.state.myData2 ;
                                                                               // the wifi list (mac and rssi)
       temp.map((data)=>{
         if (data.major===1){
-          beacons_list.push({ "mac" : this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] , "rssi":data.rssi} )};    //we push our (mac and rssi) of every wifi to a list to pass it to json
+          var theMac= this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)]
+          beacons_list.push({ "mac" : theMac , "rssi":data.rssi} )
+          if ( this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] && beacons_list.length>3){
+            this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] += data.rssi}
+          else{  
+            this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] = 0
+            this.state.average[ this.state.mac_list [ parseInt(data.major)][ parseInt(data.minor)] ] += data.rssi
+          
+          }
+          
+        
+                                                  };    //we push our (mac and rssi) of every wifi to a list to pass it to json
+          
+        
         })
+
+      console.log(this.state.average)
         // console.log(temp)
       var mydict = {                                                   // prepairing the json :
         "group" : "arman_20_7_96_ble_2" ,
@@ -86,7 +139,7 @@ export default class Beacon_class extends Component {
 
       var myjson = JSON.stringify(mydict)
       // console.log(myjson)
-      console.log(Date.now())
+      // console.log(Date.now())
       fetch("http://104.237.255.199:18003/track",{                           // send myjson to server
         method:"POST",
         body: myjson })
@@ -107,8 +160,8 @@ export default class Beacon_class extends Component {
    
 
     componentDidMount() {
-      PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
-      PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
+      //PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
+      //PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
       this.beaconsDidRange = DeviceEventEmitter.addListener(
         'beaconsDidRange',
         (data) => {
