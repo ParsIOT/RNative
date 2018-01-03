@@ -1,4 +1,4 @@
-import { StackNavigator } from 'react-navigation';
+import {StackNavigator} from 'react-navigation';
 import {AppRegistry} from 'react-native'
 
 // import beacon from './app/screens/beacons-page'
@@ -10,9 +10,6 @@ import App from './app/index'
 // MessageQueue.spy(true);
 
 AppRegistry.registerComponent('reactNativeBeaconExample', () => App);
-
-
-
 
 
 // import React, { Component } from 'react';
