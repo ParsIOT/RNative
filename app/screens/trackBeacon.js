@@ -25,17 +25,7 @@ export default class Beacon_class extends Component {
             result_y: 0,
             average: {},
             repeate: {},
-//  mac_list:[0,[0,
-//   'FA:CF:CB:5D:0E:B8',
-//   'FA:C5:13:37:F5:09',
-//   'F0:AB:CE:31:10:B9',
-//   'CB:16:FA:98:34:D7',
-//   'EE:FA:1C:0E:68:BF',
-//   'D2:AC:7C:25:36:FA',
-//   'CD:35:23:69:6B:69',
-//   'EC:7D:1E:28:F0:06',
 
-//  ]],
             mac_list: [0, [0,
                 '01:17:C5:97:E7:B3',
                 '01:17:C5:97:1B:44',
@@ -69,17 +59,17 @@ export default class Beacon_class extends Component {
                 this.setState({average: {}, repeate: {}})
 
             }
-        }, 1000);
+        }, 300);  //todo: reduce check intervals to less than one minutes
     }
 
 
     componentWillMount() {
 
-        Beacons.detectIBeacons();
+        Beacons.detectIBeacons();               // toDo; some beacons was not deceted (rssi is zero) in ios
         Beacons.startMonitoringForRegion(null).catch((err) => console.log("***startmonitoringError : " + err));
         Beacons.startRangingBeaconsInRegion(
             'REGION1',
-            null
+            null //23a01af0-232a-4518-9c0e-323fb773f5ef
         )
             .then(
                 () => console.log('Beacons ranging started succesfully')
@@ -127,7 +117,7 @@ export default class Beacon_class extends Component {
         // console.log("\n beacons_list =>>>> ",beacons_list)
         // console.log("temp =>>>>",temp)
         var mydict = {                                                   // prepairing the json :
-            "group": "arman_20_7_96_ble_2",
+            "group": "arman_test",
             "username": "hadi",
             "location": "0,0",
             "time": 12309123,
@@ -194,40 +184,48 @@ export default class Beacon_class extends Component {
                 onMessage={this.onMessage}
                 // javaScriptEnabledAndroid={true}
             />
+
+        //     <ListView
+        //     dataSource={dataSource}
+        //     enableEmptySections={true}
+        //     renderRow={this.renderRow}
+        // />
         );
     }
 
-//    renderRow = rowData => { 
+   renderRow = rowData => { 
 
-//     if (rowData && rowData.major === 1){
-//      return (
-//        <View style={styles.row}>
+    if (rowData && rowData.major === 1){ //23a01af0-232a-4518-9c0e-323fb773f5ef
+        
+        console.log(rowData.uuid) 
+     return (
+       <View style={styles.row}>
 
-//         <Text style={styles.smallText}>
-//         MAC  : {this.state.mac_list[rowData.major][rowData.minor] ? this.state.mac_list[rowData.major][rowData.minor] : 'NA'}
-//         </Text>
-//          <Text style={styles.smallText}>
-//            UUID: {rowData.uuid ? rowData.uuid  : 'NA'}
-//          </Text>
-//          <Text style={styles.smallText}>
-//            Major: {rowData.major ? rowData.major : 'NA'}
-//          </Text>
-//          <Text style={styles.smallText}>
-//            Minor: {rowData.minor ? rowData.minor : 'NA'}
-//          </Text>
-//          <Text style={styles.smallText}>
-//            RSSI: {rowData.rssi ? rowData.rssi : 'NA'}
-//          </Text>
-//          <Text style={styles.smallText}>
-//            Proximity: {rowData.proximity ? rowData.proximity : 'NA'}
-//          </Text>
-//          <Text style={styles.smallText}>
-//            Distance: {rowData.accuracy ? rowData.accuracy.toFixed(2) : 'NA'}m
-//          </Text>
-//        </View>
-//      );
-//    } else {return null}
-//   }
+        {/* <Text style={styles.smallText}>
+        MAC  : {this.state.mac_list[rowData.major][rowData.minor] ? this.state.mac_list[rowData.major][rowData.minor] : 'NA'}
+        </Text> */}
+         <Text style={styles.smallText}>
+           UUID: {rowData.uuid ? rowData.uuid  : 'NA'}
+         </Text>
+         <Text style={styles.smallText}>
+           Major: {rowData.major ? rowData.major : 'NA'}
+         </Text>
+         <Text style={styles.smallText}>
+           Minor: {rowData.minor ? rowData.minor : 'NA'}
+         </Text>
+         <Text style={styles.smallText}>
+           RSSI: {rowData.rssi ? rowData.rssi : 'NA'}
+         </Text>
+         <Text style={styles.smallText}>
+           Proximity: {rowData.proximity ? rowData.proximity : 'NA'}
+         </Text>
+         <Text style={styles.smallText}>
+           Distance: {rowData.accuracy ? rowData.accuracy.toFixed(2) : 'NA'}m
+         </Text>
+       </View>
+     );
+   } else {return null}
+  }
 
 }
 
