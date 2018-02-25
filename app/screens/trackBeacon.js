@@ -3,7 +3,7 @@ import React, {Component} from 'react';
 import {
     StyleSheet, Text,
     ListView, View, DeviceEventEmitter,
-    Alert, WebView,
+    Alert, WebView, AsyncStorage,
 } from 'react-native';  //PermissionsAndroid
 import {StackNavigator, TabNavigator, DrawerNavigator} from 'react-navigation'
 import Beacons from 'react-native-beacons-manager';
@@ -118,7 +118,7 @@ export default class Beacon_class extends Component {
         // console.log("temp =>>>>",temp)
         var mydict = {                                                   // prepairing the json :
             "group": "arman_test",
-            "username": "hadi",
+            "username": AsyncStorage.getItem('username'),
             "location": "0,0",
             "time": 12309123,
             "wifi-fingerprint": beacons_list
@@ -133,7 +133,7 @@ export default class Beacon_class extends Component {
             body: myjson
         })
             .then((response) => {
-                console.log(response)
+                // console.log(response)
                 return (JSON.stringify(eval("(" + response._bodyInit + ")")))
             })      // get the response and change("") around json to ('') to able to parse it
             .then((r2) => JSON.parse(r2))

@@ -10,8 +10,8 @@ import Setting from '../screens/setting.js'
 export const Tabs = TabNavigator({
     //track:{screen:track},
     //Wlearn:{screen:learn},
-    // Tbeacon:{screen:TrackBeacons},
-    Tlearn:{screen:learnBeacon},
+    Tbeacon:{screen:TrackBeacons},
+    // Tlearn:{screen:learnBeacon},
     Set : { screen : Setting }
 
 }
