@@ -1,10 +1,15 @@
 'use strict';
 import React, {Component} from 'react';
 import {
-    StyleSheet, Text,
-    ListView, View, DeviceEventEmitter,
-    Alert, WebView, AsyncStorage,
-} from 'react-native';  //PermissionsAndroid
+    StyleSheet,
+        Text,
+            ListView, 
+                View, 
+                    DeviceEventEmitter,
+                        Alert, 
+                            WebView, 
+                                AsyncStorage,} from 'react-native';  
+
 import {StackNavigator, TabNavigator, DrawerNavigator} from 'react-navigation'
 import Beacons from 'react-native-beacons-manager';
 import {storage} from './setting'
@@ -12,23 +17,17 @@ import {storage} from './setting'
 
 export default class Beacon_class extends Component {
     static navigationOptions = {title: 'TBeacon'};
-    static ttt=null
-
     constructor(props) {
         super(props);
-        var ds = new ListView.DataSource({
-            rowHasChanged: (r1, r2) => r1 !== r2
-        });
+        var ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2});  //it was for listView to show changes instantly
         this.state = {
-            dataSource: ds.cloneWithRows([]),
+            dataSource: ds.cloneWithRows([]),               //a container to store data in it 
             myData2: [],
-            num: 0,
+            movings:{},
             result_x: 0,
             result_y: 0,
             average: {},
             repeate: {},
-            intervalTime:0,
-            sizeBundle:0,
             percents : [ 0.1, 0.1, 0.1, 0.3, 0.4 ],
             mac_list: [0, [0,
                 '01:17:C5:97:E7:B3',
@@ -40,25 +39,19 @@ export default class Beacon_class extends Component {
                 '01:17:C5:97:B5:70',
                 '01:17:C5:97:44:BE'
             ]],
-            movings:{}
+            
         };
 
-        //  setInterval(() => {
-        //   this.retrieveData.then(ret=>{console.log(ret)})
-        //   }, 1500 );
-
-        // this.mainFunction()
         this.testMovingAverage()
-
-        
-
     }
 
 
-    componentWillMount() {
+    componentWillMount() {                      //In here before component is created 
+                                                     //we request the phone(by java or object-c) to search for 
+                                                           // beacons and update 'beaconsDidRange' event
 
         Beacons.detectIBeacons();               // toDo; some beacons was not deceted (rssi is zero) in ios
-        Beacons.startMonitoringForRegion(null).catch((err) => console.log("***startmonitoringError : " + err));
+        Beacons.startMonitoringForRegion(null).catch((err) => console.log("*** startmonitoringError : " + err));
         Beacons.startRangingBeaconsInRegion(
             'REGION1',
             null //23a01af0-232a-4518-9c0e-323fb773f5ef
@@ -73,20 +66,44 @@ export default class Beacon_class extends Component {
     }
 
 
+    componentDidMount() {       //after compontent is created we listen to device to changes and save them
+        //PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.
+            //ACCESS_COARSE_LOCATION, 
+            //{ 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
+        //PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
+        this.beaconsDidRange = DeviceEventEmitter.addListener(
+            'beaconsDidRange',
+            (data) => {
+                // var wifiArray = JSON.parse(data);
+                this.setState({
+                    myData2: data.beacons,
+                    dataSource: this.state.dataSource.cloneWithRows(data.beacons)
+                });
+                // console.log(this.state.mydata2)
+            }
+        )
+    }
 
-    updateMovingAverageList(mac, rssi){
+    componentWillUnMount() {                        //if called when the component is removed from the DOM
+        this.beaconsDidRange = null;
+    }
+
+
+    updateMovingAverageList(mac, rssi){             // in this function we get mac and rssi 
+                                                        //and update our dictionary of 
+                                                            //  macs-rssis and delete fist one and push new one
 
         if (this.state.movings[mac]){
             this.state.movings[mac].splice(0,1)     //remove first item
             this.state.movings[mac].push(rssi)      // push new value
         }
         else {
-            this.state.movings[mac] = [ rssi, rssi, rssi, rssi, rssi ]
+            this.state.movings[mac] = [ rssi, rssi, rssi, rssi, rssi ]      //if it wasnt in dictionary we make a list of dumplicate rssi
             
         }
     }
 
-    calculateMovingAverage(){
+    calculateMovingAverage(){                    //here we multiply our ready macs to our percents and return a result of mac-rssis
         var result = []
         for (var mac in this.state.movings) {
             var mylist = this.state.movings[mac]
@@ -100,7 +117,7 @@ export default class Beacon_class extends Component {
     }
 
 
-    testMovingAverage(){
+    testMovingAverage(){                                //a test for moving average
         this.updateMovingAverageList('1','-20')
         this.updateMovingAverageList('1','-20')
         this.updateMovingAverageList('1','-90')
@@ -114,12 +131,12 @@ export default class Beacon_class extends Component {
     
     
 
-    mainFunction=  ()=>{
+    mainFunction=  ()=>{        //it is our main control function it will addtoaverage in timeintervals and send to server depending on bundle size
 
 
         var count = 0;
 
-        var rep = setInterval( () => {
+        var rep = setInterval( () => {          
         count++;
         this._addToAverage()
         // Sending to server *
@@ -142,8 +159,8 @@ export default class Beacon_class extends Component {
         //getUpdate
         var temp = this.state.myData2
         temp.map((data) => {
-            if (data.major === 1) {
-                if (this.state.average[this.state.mac_list [parseInt(data.major)][parseInt(data.minor)]]) {
+            if (data.major === 1) { //because we had beacon with major=1000 in around i filter it to 1
+                if (this.state.average[this.state.mac_list [parseInt(data.major)][parseInt(data.minor)]]) {                    //if it wasnt first time that this beacon's rssi is added so we add the rssi to previos amount and incremtn the repeate amount to get mean amount of each beacons at end
                     this.state.average[this.state.mac_list [parseInt(data.major)][parseInt(data.minor)]] += data.rssi
                     this.state.repeate[this.state.mac_list [parseInt(data.major)][parseInt(data.minor)]] += 1
                     // console.log(count)
@@ -166,15 +183,15 @@ export default class Beacon_class extends Component {
     _sendToServer = async () => {
         var group =null
         var  username = null
-        await storage.load({key:'GroupNameTrack'}).then((ret=>{group=ret}))
+        await storage.load({key:'GroupNameTrack'}).then((ret=>{group=ret}))         //we retrieve data from storage here
         await storage.load({key:'username'}).then((ret=>{username=ret}))
         
 
-        var beacons_list = [];
-        var temp = this.state.average;                                                                        // the wifi list (mac and rssi)
+        // var beacons_list = [];              
+        var temp = this.state.average;                                                                        
         for (var mac in temp) {
-            beacons_list.push({"mac": mac, "rssi": Math.round(temp[mac] / this.state.repeate[mac])})
-            this.updateMovingAverageList( mac, Math.round(temp[mac] / this.state.repeate[mac] ))
+            // beacons_list.push({"mac": mac, "rssi": Math.round(temp[mac] / this.state.repeate[mac])})
+            this.updateMovingAverageList( mac, Math.round(temp[mac] / this.state.repeate[mac] ))    // we add to the moving list the last rssi(which is devide at last)
         }
 
 
@@ -186,7 +203,7 @@ export default class Beacon_class extends Component {
             "location": "0,0",
             "time": Date.now(),
             //"wifi-fingerprint": beacons_list 
-            "wifi-fingerprint": this.calculateMovingAverage()
+            "wifi-fingerprint": this.calculateMovingAverage()                   //we calculate our last fingerprints according to our percents
             
         }
 
@@ -216,27 +233,9 @@ export default class Beacon_class extends Component {
     }
 
 
-    componentDidMount() {
-        //PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
-        //PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
-        this.beaconsDidRange = DeviceEventEmitter.addListener(
-            'beaconsDidRange',
-            (data) => {
-                // var wifiArray = JSON.parse(data);
-                this.setState({
-                    myData2: data.beacons,
-                    dataSource: this.state.dataSource.cloneWithRows(data.beacons)
-                });
-                // console.log(this.state.mydata2)
-            }
-        )
-    }
+    
 
-    componentWillUnMount() {
-        this.beaconsDidRange = null;
-    }
-
-    onMessage = (data) => {
+    onMessage = (data) => {                                         //the function to recieve message from webview
         console.log(data.nativeEvent.data)
     }
 
@@ -259,7 +258,7 @@ export default class Beacon_class extends Component {
         );
     }
 
-   renderRow = rowData => { 
+   renderRow = rowData => { //this is for list view that determines the style and rendering of list items
 
     if (rowData && rowData.major === 1){ //23a01af0-232a-4518-9c0e-323fb773f5ef
         
