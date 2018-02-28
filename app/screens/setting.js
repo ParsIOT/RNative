@@ -8,7 +8,21 @@ Image,
 TextInput,
 ScrollView,
 AsyncStorage,
-TouchableNativeFeedback} from 'react-native';
+TouchableNativeFeedback,
+Vibration} from 'react-native';
+
+import Storage from 'react-native-storage'
+
+
+const storage = new Storage({
+    size:20,
+    storageBackend: AsyncStorage,
+    defaultExpires: null,
+    enableCache: true,
+    
+})
+export{storage}
+
 
 
 
@@ -19,14 +33,13 @@ export default class Setting extends Component {
     constructor(props){
         super(props)
         this.state={
-
             username : 'hadi',
-                Group_name_Track : 'arman_23_9_96_ble_2',
-                    Group_name_Learn : '',
+                GroupNameTrack : 'arman_23_9_96_ble_2',
+                    GroupNameLearn : 'None',
                         ServerAddress : '104.237.255.199:18003',
-                            Scan_Interval : 300,
-                                Bundle_size : 10,
-                                    How_many_bundle_learn : 10,
+                            ScanInterval : 300,
+                                BundleSize : 10,
+                                    HowManyBundleLearn : 10,
                                         loading: 1,
            
 
@@ -42,68 +55,68 @@ export default class Setting extends Component {
 
 
     saveItems = async () => {
-        let items= Object.keys(this.state)
-        for (var i=0 ; i<4 ; i++){
+        let itemsKey= Object.keys(this.state)
+        let itemsValue= Object.values(this.state)
+
+        for (var i=0 ; i<7 ; i++){
             try{
-                console.log(items[i] + '-->' + Object.values(this.state)[i])                    
-                await AsyncStorage.setItem(items[i], (Object.values(this.state)[i]))
+                if (i==6){
+                    console.log(itemsKey[i] + '-->' + Object.values(this.state)[i])                    
+                    await storage.save({ key:itemsKey[i], data:itemsValue[i] })
+                    await Alert.alert('saving Done :)')
+                }
+                else{
+                console.log(itemsKey[i] + '-->' + Object.values(this.state)[i])                    
+                await storage.save({ key:itemsKey[i], data:itemsValue[i] })
+                }
             }
             catch(error){console.log('error in Save Items :'+ error)}
 }
-
-
-
-        for (var i=4 ; i<7 ; i++){
-            try{
-                if (i==6){
-                    console.log(items[i] + '-->' + Object.values(this.state)[i])                    
-                    await AsyncStorage.setItem(items[i], (Object.values(this.state)[i]).toString())
-                    Alert.alert("Savind done :)")
-                }
-                else{
-                console.log(items[i] + '-->' + Object.values(this.state)[i])                    
-                await AsyncStorage.setItem(items[i], (Object.values(this.state)[i]))
-                }
-                        }
-                catch(error){console.log('error in Save Items :'+ error)}
             }
 
 
-}
+
 
 
     
     loadData = async  () =>{
                 try{
 
-                const user =   await AsyncStorage.getItem('username')
-                if (user) this.setState({username:user})
-    
-                const GT =  await AsyncStorage.getItem('Group_name_Track')
-                if (GT) this.setState({Group_name_Track:GT})
-    
-                const GL =  await AsyncStorage.getItem('Group_name_Learn')
-                if (GL) this.setState({Group_name_Learn:GL})
-    
-                const SA =  await AsyncStorage.getItem('ServerAddress')
-                if (SA) this.setState({ServerAddress:SA})
-    
-                const SI =  await AsyncStorage.getItem('Scan_Interval')
-                if (SI) this.setState({Scan_Interval:SI})
-    
-                const BS =  await AsyncStorage.getItem('Bundle_size')
-                if (BS) this.setState({Bundle_size:BS})
-    
-                const HMBL =  await AsyncStorage.getItem('How_many_bundle_learn')
-                if (HMBL) this.setState({How_many_bundle_learn:HMBL})
-    
-                 await this.setState({ loading : 0 })
-                
-                 
+                    await this.loadItem('username')
+                    await this.loadItem('GroupNameLearn')
+                    await this.loadItem('GroupNameTrack')
+                    await this.loadItem('ServerAddress')
+                    await this.loadItem('ScanInterval')
+                    await this.loadItem('BundleSize')
+                    await this.loadItem('HowManyBundleLearn')
+                    await this.setState({ loading : 0 })
+                          
                 }catch(error){console.log(error)}
 
 
             
+    }
+
+    
+    loadItem(key){
+        storage.load({
+            key: key,
+            autoSync: true, })
+        .then(value => {
+            this.setState({[key]:value})
+                        ;})
+        .catch(err => {
+            console.warn(err.message);
+            switch (err.name) {
+                case 'NotFoundError':
+                console.log('not found')
+                    storage.save({key:key, data:this.state[key]})
+                    break;
+                case 'ExpiredError':
+                    // TODO
+                    break;
+            }
+        })
     }
 
     
@@ -125,6 +138,7 @@ export default class Setting extends Component {
             <ScrollView style={{paddingBottom:50}}>  
             <View style={{flex:1, marginBottom:20}}>
                 <Text style={{paddingBottom:10, paddingTop:10}}> SERVER SETTING </Text>
+                <Text style={{fontWeight: "bold"}}> username </Text>
                 <TextInput 
                     underlineColorAndroid='black' 
                     defaultValue = {this.state.username} 
@@ -132,60 +146,62 @@ export default class Setting extends Component {
                     onChangeText = { (text)=>{ this.setState({username : text })} }
                 />
 
-                <Text> Group_name_Learn </Text>
+                <Text style={{fontWeight: "bold"}}> GroupNameLearn </Text>
                 <TextInput underlineColorAndroid='black' 
-                    onChangeText = { (text)=>{ this.setState({Group_name_Learn : text })} } 
+                    onChangeText = { (text)=>{ this.setState({GroupNameLearn : text })} } 
                     style={{ paddingTop:5 ,paddingLeft:10}}
-                    defaultValue = {this.state.Group_name_Learn}
+                    defaultValue = {this.state.GroupNameLearn}
                  />
 
-                <Text> Group_name_Track </Text>
+                <Text style={{fontWeight: "bold"}}> GroupNameTrack </Text>
                 <TextInput underlineColorAndroid='black' 
-                    onChangeText = { (text)=>{ this.setState({Group_name_Track : text })} } 
+                    onChangeText = { (text)=>{ this.setState({GroupNameTrack : text })} } 
                     style={{ paddingTop:5 ,paddingLeft:10}}
-                    defaultValue = {this.state.Group_name_Track}
+                    defaultValue = {this.state.GroupNameTrack}
                  />
 
-                <Text> ServerAddress </Text>
+                <Text style={{fontWeight: "bold"}}> ServerAddress </Text>
                 <TextInput underlineColorAndroid='black' 
                     onChangeText = { (text)=>{ this.setState({ServerAddress : text })} } 
                     style={{ paddingTop:5 ,paddingLeft:10}}
                     defaultValue = {this.state.ServerAddress}
                  />
 
-                <Text> Scan_Interval(ms) </Text>
+                <Text style={{fontWeight: "bold"}}> ScanInterval(ms) </Text>
                 <TextInput underlineColorAndroid='black' 
-                    onChangeText = { (text)=>{ this.setState({Scan_Interval : text })} } 
+                    onChangeText = { (text)=>{ this.setState({ScanInterval : text })} }
+                    keyboardType={'numeric'}                    
                     style={{ paddingTop:5 ,paddingLeft:10}}
-                    defaultValue = {(this.state.Scan_Interval.toString())}
+                    defaultValue = {(this.state.ScanInterval.toString())}
                  />
 
-                <Text> Bundle_size </Text>
+                <Text style={{fontWeight: "bold"}} > BundleSize </Text>
                 <TextInput underlineColorAndroid='black' 
-                    onChangeText = { (text)=>{ this.setState({Bundle_size : text })} } 
+                    onChangeText = { (text)=>{ this.setState({BundleSize : text })} } 
+                    keyboardType={'numeric'}                    
                     style={{ paddingTop:5 ,paddingLeft:10}}
-                    defaultValue = {(this.state.Bundle_size.toString())}
+                    defaultValue = {(this.state.BundleSize.toString())}
                  />
 
-                <Text> How_many_bundle_learn </Text>
+                <Text style={{fontWeight: "bold"}}> HowManyBundleLearn </Text>
                 <TextInput underlineColorAndroid='black' 
-                    onChangeText = { (text)=>{ this.setState({How_many_bundle_learn : text })} } 
+                    onChangeText = { (text)=>{ this.setState({HowManyBundleLearn : text })} } 
+                    keyboardType={'numeric'}
                     style={{ paddingTop:5 ,paddingLeft:10}}
-                    defaultValue = {(this.state.How_many_bundle_learn.toString())}
+                    defaultValue = {(this.state.HowManyBundleLearn.toString())}
                  />
 
 
                 
             </View>
+            </ScrollView>
 
             <TouchableNativeFeedback
             onPress={()=>{this.saveItems()}} >
-                <View style={{justifyContent:'center',borderTopLeftRadius:50,borderTopRightRadius:50, flexDirection:'row', alignItems:'center', backgroundColor:'rgb(0,122,122)'}}>                
+                <View style={{justifyContent:'center',borderTopLeftRadius:0,borderTopRightRadius:0, flexDirection:'row', alignItems:'center', backgroundColor:'rgb(0,122,122)'}}>                
                     <Text style={{color:'white', textAlign:'center', textAlignVertical:'center', margin:10}}>Save Data</Text>
                 </View>
             </TouchableNativeFeedback> 
-
-            </ScrollView>
 
             
                 

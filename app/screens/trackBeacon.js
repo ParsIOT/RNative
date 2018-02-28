@@ -7,10 +7,12 @@ import {
 } from 'react-native';  //PermissionsAndroid
 import {StackNavigator, TabNavigator, DrawerNavigator} from 'react-navigation'
 import Beacons from 'react-native-beacons-manager';
+import {storage} from './setting'
 
 
 export default class Beacon_class extends Component {
     static navigationOptions = {title: 'TBeacon'};
+    static ttt=null
 
     constructor(props) {
         super(props);
@@ -25,7 +27,9 @@ export default class Beacon_class extends Component {
             result_y: 0,
             average: {},
             repeate: {},
-
+            intervalTime:0,
+            sizeBundle:0,
+            percents : [ 0.1, 0.1, 0.1, 0.3, 0.4 ],
             mac_list: [0, [0,
                 '01:17:C5:97:E7:B3',
                 '01:17:C5:97:1B:44',
@@ -36,30 +40,18 @@ export default class Beacon_class extends Component {
                 '01:17:C5:97:B5:70',
                 '01:17:C5:97:44:BE'
             ]],
+            movings:{}
         };
 
         //  setInterval(() => {
-        //   this._sendToServer()
+        //   this.retrieveData.then(ret=>{console.log(ret)})
         //   }, 1500 );
 
+        // this.mainFunction()
+        this.testMovingAverage()
 
-        var count = 0;
+        
 
-        var rep = setInterval(() => {
-            count++;
-            this._addToAverage(count)
-            // Sending to server *
-            if (count === 3) {
-                this._addToAverage(count)
-                // console.log(this.state.average)
-                // console.log(this.state.repeate)
-                this._sendToServer()
-                console.log('done')
-                count = 0
-                this.setState({average: {}, repeate: {}})
-
-            }
-        }, 300);  //todo: reduce check intervals to less than one minutes
     }
 
 
@@ -81,7 +73,71 @@ export default class Beacon_class extends Component {
     }
 
 
-    _addToAverage = (count) => {
+
+    updateMovingAverageList(mac, rssi){
+
+        if (this.state.movings[mac]){
+            this.state.movings[mac].splice(0,1)     //remove first item
+            this.state.movings[mac].push(rssi)      // push new value
+        }
+        else {
+            this.state.movings[mac] = [ rssi, rssi, rssi, rssi, rssi ]
+            
+        }
+    }
+
+    calculateMovingAverage(){
+        var result = []
+        for (var mac in this.state.movings) {
+            var mylist = this.state.movings[mac]
+            var Rssi = 0
+            for (var p=0; p < mylist.length; p++){
+                Rssi += mylist[p] * this.state.percents[p]
+            }
+            result.push({"mac":mac, "rssi":Rssi})
+        }
+        return result;
+    }
+
+
+    testMovingAverage(){
+        this.updateMovingAverageList('1','-20')
+        this.updateMovingAverageList('1','-20')
+        this.updateMovingAverageList('1','-90')
+        this.updateMovingAverageList('2','-20')
+        this.updateMovingAverageList('1','-30')
+
+        console.log(this.calculateMovingAverage() )
+        
+    }
+
+    
+    
+
+    mainFunction=  ()=>{
+
+
+        var count = 0;
+
+        var rep = setInterval( () => {
+        count++;
+        this._addToAverage()
+        // Sending to server *
+        if (count === 3 ) {   //bundle size
+        this._addToAverage()
+        // console.log(this.state.average)
+        // console.log(this.state.repeate)
+        this._sendToServer()
+        console.log('done')
+        count = 0
+        this.setState({average: {}, repeate: {}})
+
+        }
+        }, 1000);  //todo: reduce check intervals to less than one minutes
+        //scan intervals
+    }
+
+    _addToAverage = () => {
 
         //getUpdate
         var temp = this.state.myData2
@@ -107,21 +163,31 @@ export default class Beacon_class extends Component {
     }
 
 
-    _sendToServer = () => {
+    _sendToServer = async () => {
+        var group =null
+        var  username = null
+        await storage.load({key:'GroupNameTrack'}).then((ret=>{group=ret}))
+        await storage.load({key:'username'}).then((ret=>{username=ret}))
+        
+
         var beacons_list = [];
         var temp = this.state.average;                                                                        // the wifi list (mac and rssi)
         for (var mac in temp) {
             beacons_list.push({"mac": mac, "rssi": Math.round(temp[mac] / this.state.repeate[mac])})
+            this.updateMovingAverageList( mac, Math.round(temp[mac] / this.state.repeate[mac] ))
         }
+
 
         // console.log("\n beacons_list =>>>> ",beacons_list)
         // console.log("temp =>>>>",temp)
         var mydict = {                                                   // prepairing the json :
-            "group": "arman_test",
-            "username": AsyncStorage.getItem('username'),
+            "group": group,
+            "username":username,            
             "location": "0,0",
-            "time": 12309123,
-            "wifi-fingerprint": beacons_list
+            "time": Date.now(),
+            //"wifi-fingerprint": beacons_list 
+            "wifi-fingerprint": this.calculateMovingAverage()
+            
         }
 
 
