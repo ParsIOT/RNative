@@ -8,7 +8,8 @@ import {
                     DeviceEventEmitter,
                         Alert, 
                             WebView, 
-                                AsyncStorage,} from 'react-native';  
+                                AsyncStorage,
+                            } from 'react-native';  
 
 import {StackNavigator, TabNavigator, DrawerNavigator} from 'react-navigation'
 import Beacons from 'react-native-beacons-manager';
@@ -28,7 +29,8 @@ export default class Beacon_class extends Component {
             result_y: 0,
             average: {},
             repeate: {},
-            percents : [ 0.1, 0.1, 0.1, 0.3, 0.4 ],
+            beaconUnusage:{},
+            percents : [   0.1148 , 0.3537 ],
             mac_list: [0, [0,
                 '01:17:C5:97:E7:B3',
                 '01:17:C5:97:1B:44',
@@ -55,7 +57,7 @@ export default class Beacon_class extends Component {
         Beacons.startMonitoringForRegion(null).catch((err) => console.log("*** startmonitoringError : " + err));
         Beacons.startRangingBeaconsInRegion(
             'REGION1',
-            null //23a01af0-232a-4518-9c0e-323fb773f5ef
+            '23a01af0-232a-4518-9c0e-323fb773f5ef'
         )
             .then(
                 () => console.log('Beacons ranging started succesfully')
@@ -68,10 +70,8 @@ export default class Beacon_class extends Component {
 
 
     componentDidMount() {       //after compontent is created we listen to device to changes and save them
-        //PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.
-            //ACCESS_COARSE_LOCATION, 
-            //{ 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
-        //PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
+        // PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,{ 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
+        // PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
         this.beaconsDidRange = DeviceEventEmitter.addListener(
             'beaconsDidRange',
             (data) => {
@@ -100,19 +100,32 @@ export default class Beacon_class extends Component {
             // console.log(this.state.movings)
         }
         else {
-            this.state.movings[mac] = [ rssi, rssi, rssi, rssi, rssi ]      //if it wasnt in dictionary we make a list of dumplicate rssi
+            this.state.movings[mac] = [ rssi, rssi, rssi, rssi, rssi, rssi ]      //if it wasnt in dictionary we make a list of dumplicate rssi
+            
             // console.log(this.state.movings)
         }
     }
 
     calculateMovingAverage(){                    //here we multiply our ready macs to our percents and return a result of mac-rssis
         var result = []
+        var mylist = []
         for (var mac in this.state.movings) {
-            var mylist = this.state.movings[mac]
+            mylist = this.state.movings[mac]
             var Rssi = 0
-            for (var p=0; p < mylist.length; p++){
+            console.log(mylist)
+            mylist= mylist.slice(mylist.length - this.state.percents.length)
+            console.log('the second => ',mylist)
+            for (var p=0; p < this.state.percents.length; p++){
                 Rssi += mylist[p] * this.state.percents[p]
             }
+           
+            
+
+            var multiplierSum=0
+            for (var item in this.state.percents ){ multiplierSum += this.state.percents[item]}
+            // console.log(Rssi,'----',multiplierSum)
+            Rssi=Rssi/multiplierSum
+            // console.log(Rssi)
             result.push({"mac":mac, "rssi":Math.round(Rssi) })
         }
         // console.log(result)
@@ -143,7 +156,7 @@ export default class Beacon_class extends Component {
         count++;
         this._addToAverage()
         // Sending to server *
-        if (count === 3 ) {   //bundle size
+        if (count === 10 ) {   //bundle size
         this._addToAverage()
         // console.log(this.state.average)
         // console.log(this.state.repeate)
@@ -153,7 +166,7 @@ export default class Beacon_class extends Component {
         this.setState({average: {}, repeate: {}})
 
         }
-        }, 700);  //todo: reduce check intervals to less than one minutes
+        }, 300);  //todo: reduce check intervals to less than one minutes
         //scan intervals
     }
 
@@ -161,6 +174,7 @@ export default class Beacon_class extends Component {
 
         //getUpdate
         var temp = this.state.myData2
+        this
         temp.map((data) => {
             if (data.major === 1) { //because we had beacon with major=1000 in around i filter it to 1
                 if (this.state.average[this.state.mac_list [parseInt(data.major)][parseInt(data.minor)]]) {                    //if it wasnt first time that this beacon's rssi is added so we add the rssi to previos amount and incremtn the repeate amount to get mean amount of each beacons at end
@@ -249,7 +263,7 @@ export default class Beacon_class extends Component {
         const {dataSource} = this.state;
         return (
             <WebView
-                source={require('../static/TrackBeacon.html')}
+                source={require('./app/static/TrackBeacon.html')}
                 ref="webview"
                 style={{marginTop: 0}}
                 onMessage={this.onMessage}
