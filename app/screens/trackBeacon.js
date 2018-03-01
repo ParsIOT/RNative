@@ -42,7 +42,8 @@ export default class Beacon_class extends Component {
             
         };
 
-        this.testMovingAverage()
+        // this.testMovingAverage()
+        this.mainFunction()
     }
 
 
@@ -91,15 +92,16 @@ export default class Beacon_class extends Component {
 
     updateMovingAverageList(mac, rssi){             // in this function we get mac and rssi 
                                                         //and update our dictionary of 
-                                                            //  macs-rssis and delete fist one and push new one
+                                                           //  macs-rssis and delete fist one and push new one
 
         if (this.state.movings[mac]){
             this.state.movings[mac].splice(0,1)     //remove first item
-            this.state.movings[mac].push(rssi)      // push new value
+            this.state.movings[mac].push(rssi)    // push new value
+            // console.log(this.state.movings)
         }
         else {
             this.state.movings[mac] = [ rssi, rssi, rssi, rssi, rssi ]      //if it wasnt in dictionary we make a list of dumplicate rssi
-            
+            // console.log(this.state.movings)
         }
     }
 
@@ -111,8 +113,9 @@ export default class Beacon_class extends Component {
             for (var p=0; p < mylist.length; p++){
                 Rssi += mylist[p] * this.state.percents[p]
             }
-            result.push({"mac":mac, "rssi":Rssi})
+            result.push({"mac":mac, "rssi":Math.round(Rssi) })
         }
+        // console.log(result)
         return result;
     }
 
@@ -150,7 +153,7 @@ export default class Beacon_class extends Component {
         this.setState({average: {}, repeate: {}})
 
         }
-        }, 1000);  //todo: reduce check intervals to less than one minutes
+        }, 700);  //todo: reduce check intervals to less than one minutes
         //scan intervals
     }
 
@@ -171,6 +174,7 @@ export default class Beacon_class extends Component {
                     this.state.average[this.state.mac_list [parseInt(data.major)][parseInt(data.minor)]] = 0
                     this.state.average[this.state.mac_list [parseInt(data.major)][parseInt(data.minor)]] += data.rssi
                     this.state.repeate[this.state.mac_list [parseInt(data.major)][parseInt(data.minor)]] = 1
+                    // console.log(this.state.average)
                 }
             }
 
@@ -180,26 +184,28 @@ export default class Beacon_class extends Component {
     }
 
 
-    _sendToServer = async () => {
+    _sendToServer =  () => {
         var group =null
         var  username = null
-        await storage.load({key:'GroupNameTrack'}).then((ret=>{group=ret}))         //we retrieve data from storage here
-        await storage.load({key:'username'}).then((ret=>{username=ret}))
+         storage.load({key:'GroupNameTrack'}).then((ret=>{group=ret}))         //we retrieve data from storage here
+         storage.load({key:'username'}).then((ret=>{username=ret}))
         
 
         // var beacons_list = [];              
-        var temp = this.state.average;                                                                        
+        var temp = this.state.average;  
+        // console.log(this.state.average)                                                                      
         for (var mac in temp) {
+            console.log(23)
             // beacons_list.push({"mac": mac, "rssi": Math.round(temp[mac] / this.state.repeate[mac])})
             this.updateMovingAverageList( mac, Math.round(temp[mac] / this.state.repeate[mac] ))    // we add to the moving list the last rssi(which is devide at last)
         }
 
-
+        // console.log(this.calculateMovingAverage())
         // console.log("\n beacons_list =>>>> ",beacons_list)
         // console.log("temp =>>>>",temp)
         var mydict = {                                                   // prepairing the json :
-            "group": group,
-            "username":username,            
+            "group": "arman_20_7_96_ble_2",
+            "username":"hadi",            
             "location": "0,0",
             "time": Date.now(),
             //"wifi-fingerprint": beacons_list 
@@ -216,7 +222,7 @@ export default class Beacon_class extends Component {
             body: myjson
         })
             .then((response) => {
-                // console.log(response)
+                console.log(response)
                 return (JSON.stringify(eval("(" + response._bodyInit + ")")))
             })      // get the response and change("") around json to ('') to able to parse it
             .then((r2) => JSON.parse(r2))
