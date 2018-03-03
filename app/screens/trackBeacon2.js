@@ -9,7 +9,7 @@ import {
                         Alert, 
                             WebView, 
                                 AsyncStorage,
-                            PermissionsAndroid} from 'react-native';  
+                            } from 'react-native';  
 
 import {StackNavigator, TabNavigator, DrawerNavigator} from 'react-navigation'
 import Beacons from 'react-native-beacons-manager';
@@ -23,7 +23,6 @@ export default class Beacon_class extends Component {
         var ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2});  //it was for listView to show changes instantly
         this.state = {
             dataSource: ds.cloneWithRows([]),               //a container to store data in it 
-            LU : {},                                        //least usage
             myData2: [],
             movings:{},
             result_x: 0,
@@ -47,7 +46,6 @@ export default class Beacon_class extends Component {
 
         // this.testMovingAverage()
         this.mainFunction()
-        // console.log(this.Diff_list([1,2,3], [2,3]))
     }
 
 
@@ -59,7 +57,7 @@ export default class Beacon_class extends Component {
         Beacons.startMonitoringForRegion(null).catch((err) => console.log("*** startmonitoringError : " + err));
         Beacons.startRangingBeaconsInRegion(
             'REGION1',
-            null //23a01af0-232a-4518-9c0e-323fb773f5ef
+            '23a01af0-232a-4518-9c0e-323fb773f5ef'
         )
             .then(
                 () => console.log('Beacons ranging started succesfully')
@@ -72,8 +70,8 @@ export default class Beacon_class extends Component {
 
 
     componentDidMount() {       //after compontent is created we listen to device to changes and save them
-        PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,{ 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
-        PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
+        // PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,{ 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
+        // PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, { 'title': 'Cool Photo App Camera Permission', 'message': 'Cool Photo App needs access to your camera ' + 'so you can take awesome pictures.' } ).then((response)=>console.log(response)).catch(err=>Alert.alert(err))
         this.beaconsDidRange = DeviceEventEmitter.addListener(
             'beaconsDidRange',
             (data) => {
@@ -108,22 +106,21 @@ export default class Beacon_class extends Component {
         }
     }
 
-    calculateMovingAverage(diff=[]){                    //here we multiply our ready macs to our percents and return a result of mac-rssis
+    calculateMovingAverage(){                    //here we multiply our ready macs to our percents and return a result of mac-rssis
         var result = []
         var mylist = []
-        for(var j=0; j<diff.length; j++) delete this.state.movings[diff[j]]
-        // console .log(this.state.movings)
-        
         for (var mac in this.state.movings) {
-            // if(mac in diff) delete this.state.movings[mac]
             mylist = this.state.movings[mac]
             var Rssi = 0
-            // console.log(mylist)
+            console.log(mylist)
             mylist= mylist.slice(mylist.length - this.state.percents.length)
-            // console.log('the second => ',mylist)
+            console.log('the second => ',mylist)
             for (var p=0; p < this.state.percents.length; p++){
                 Rssi += mylist[p] * this.state.percents[p]
             }
+           
+            
+
             var multiplierSum=0
             for (var item in this.state.percents ){ multiplierSum += this.state.percents[item]}
             // console.log(Rssi,'----',multiplierSum)
@@ -132,8 +129,6 @@ export default class Beacon_class extends Component {
             result.push({"mac":mac, "rssi":Math.round(Rssi) })
         }
         // console.log(result)
-
-
         return result;
     }
 
@@ -162,10 +157,10 @@ export default class Beacon_class extends Component {
         this._addToAverage()
         // Sending to server *
         if (count === 10 ) {   //bundle size
-        var diff=this._addToAverage()
+        this._addToAverage()
         // console.log(this.state.average)
         // console.log(this.state.repeate)
-        this._sendToServer(diff)
+        this._sendToServer()
         console.log('done')
         count = 0
         this.setState({average: {}, repeate: {}})
@@ -179,76 +174,31 @@ export default class Beacon_class extends Component {
 
         //getUpdate
         var temp = this.state.myData2
-        var datamacs=[]
-        var returnValue=[]          //then return value is a list of macs that didnt appear more than 5 times
-        
+        this
         temp.map((data) => {
             if (data.major === 1) { //because we had beacon with major=1000 in around i filter it to 1
-                var major = parseInt(data.major)
-                var minor = parseInt(data.minor)
-                var mac= this.state.mac_list[major][minor]
-                datamacs.push(mac)
-                this.state.LU[mac] = 0                      //usage of this mac is zero because it is found now      
-                //this.calculateUsage(mac)
-
-
-                if (this.state.average[mac]) {                    //if it wasnt first time that this beacon's rssi is added so we add the rssi to previos amount and incremtn the repeate amount to get mean amount of each beacons at end
-                    this.state.average[mac] += data.rssi
-                    this.state.repeate[mac] += 1
+                if (this.state.average[this.state.mac_list [parseInt(data.major)][parseInt(data.minor)]]) {                    //if it wasnt first time that this beacon's rssi is added so we add the rssi to previos amount and incremtn the repeate amount to get mean amount of each beacons at end
+                    this.state.average[this.state.mac_list [parseInt(data.major)][parseInt(data.minor)]] += data.rssi
+                    this.state.repeate[this.state.mac_list [parseInt(data.major)][parseInt(data.minor)]] += 1
                     // console.log(count)
                     // console.log(this.state.average)
                 }
                 else {
                     // console.log(count)
-                    this.state.average[mac] = 0
-                    this.state.average[mac] += data.rssi
-                    this.state.repeate[mac] = 1
+                    this.state.average[this.state.mac_list [parseInt(data.major)][parseInt(data.minor)]] = 0
+                    this.state.average[this.state.mac_list [parseInt(data.major)][parseInt(data.minor)]] += data.rssi
+                    this.state.repeate[this.state.mac_list [parseInt(data.major)][parseInt(data.minor)]] = 1
                     // console.log(this.state.average)
                 }
             }
 
         })
 
-        // console.log('before deleting = > ',this.state.LU)
-        // console.log(this.state.LU)
-        var diffs = this.Diff_list( Object.keys(this.state.LU) , datamacs )
-        // console.logs(diffs)
-        for (var m=0;m<diffs.length;m++){
-            this.state.LU[diffs[m]]++;
-            if (this.state.LU[diffs[m]]>5) 
-                {
-                    returnValue.push(diffs[m])
-                    console.log('before => ', this.state.LU)
-                    console.log('deleted item is : > ',diffs[m] )
-                    delete this.state.LU[diffs[m]]
-                    // console.log('after deleting = > ',this.state.LU)
-                }
-        }
-        
-
-        return returnValue
-    }
-
-    
-    Diff_list(l1, l2){      //l1-l2
-        var temp={}
-        var diff=[]
-        for (var i=0 ; i<l1.length ; i++){
-            temp[l1[i]] = true
-        }
-        for (var j=0 ; j<l2.length ; j++){
-            if (temp[l2[j]]){delete temp[l2[j]]}
-        }
-
-        for (var mac in temp){
-            diff.push(mac)
-        }
-        return diff
 
     }
 
 
-    _sendToServer =  (diff=null) => {
+    _sendToServer =  () => {
         var group =null
         var  username = null
          storage.load({key:'GroupNameTrack'}).then((ret=>{group=ret}))         //we retrieve data from storage here
@@ -279,14 +229,14 @@ export default class Beacon_class extends Component {
 
 
         var myjson = JSON.stringify(mydict)
-        // console.log(myjson)
+        console.log(myjson)
         // console.log(Date.now())
         fetch("http://104.237.255.199:18003/track", {                           // send myjson to server
             method: "POST",
             body: myjson
         })
             .then((response) => {
-                // console.log(response)
+                console.log(response)
                 return (JSON.stringify(eval("(" + response._bodyInit + ")")))
             })      // get the response and change("") around json to ('') to able to parse it
             .then((r2) => JSON.parse(r2))
