@@ -281,7 +281,7 @@ export default class Beacon_class extends Component {
         var myjson = JSON.stringify(mydict)
         // console.log(myjson)
         // console.log(Date.now())
-        fetch("http://104.237.255.199:18003/track", {                           // send myjson to server
+        fetch("http://104.237.255.199:18003/track?group=arman_20_7_96_ble_2", {                           // send myjson to server
             method: "POST",
             body: myjson
         })
